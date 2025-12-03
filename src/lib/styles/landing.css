@@ -1,0 +1,282 @@
+main {
+	max-width: 1000px;
+	margin: 0 auto;
+	padding: 1.5rem;
+	font-family:
+		system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		'Segoe UI',
+		sans-serif;
+}
+
+.nh-header {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+	background: #002c77;
+	padding: 1rem 1.25rem;
+	color: white;
+	border-radius: 10px;
+	margin-bottom: 1rem;
+}
+
+.nh-header img {
+	height: 70px;
+}
+
+.nh-inline-form {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.nh-inline-form input {
+	padding: 0.45rem 0.6rem;
+	border-radius: 5px;
+	border: 1px solid #b8c3ff;
+	width: 160px;
+	font-size: 0.9rem;
+}
+
+.nh-btn-add {
+	background: #ffce00;
+	border: none;
+	padding: 0.5rem 1rem;
+	border-radius: 6px;
+	font-weight: bold;
+	cursor: pointer;
+	font-size: 0.95rem;
+}
+
+.nh-btn-add:hover {
+	background: #e0b800;
+}
+
+.nh-controls {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 0.75rem;
+	margin-bottom: 0.5rem;
+}
+
+.nh-sort-select {
+	padding: 0.3rem 0.5rem;
+	border-radius: 4px;
+	border: 1px solid #ccc;
+	font-size: 0.9rem;
+}
+
+.nh-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 0.5rem;
+}
+
+.nh-table th {
+	background: #002c77;
+	color: white;
+	padding: 0.7rem;
+	font-size: 0.9rem;
+}
+
+.nh-table td {
+	padding: 0.7rem;
+	border-bottom: 1px solid #ddd;
+	font-size: 0.9rem;
+}
+
+.nh-delete-btn {
+	color: red;
+	font-weight: bold;
+	cursor: pointer;
+	padding: 0.3rem;
+}
+
+.nh-error {
+	color: red;
+	font-weight: 600;
+	padding: 0.4rem 0;
+}
+
+.modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.modal-box {
+	background: white;
+	padding: 1.5rem;
+	border-radius: 10px;
+	width: 300px;
+	text-align: center;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-actions {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 1rem;
+}
+
+.modal-cancel {
+	padding: 0.5rem 1rem;
+	background: #ccc;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.modal-confirm {
+	padding: 0.5rem 1rem;
+	background: red;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.nh-role-select {
+	padding: 0.3rem 0.5rem;
+	border-radius: 4px;
+	border: 1px solid #ccc;
+	font-size: 0.85rem;
+}
+
+/* === ROLE COLOR CODING === */
+.nh-row-probationary {
+	background: #fff9d9; /* pale yellow */
+}
+
+.nh-row-volunteer {
+	background: #e7f3ff; /* light blue */
+}
+
+.nh-row-employee {
+	background: #e6ffe6; /* very light green */
+}
+
+/* HEADER AREA — fully isolated */
+.nh-global-header {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	padding: 10px 20px;
+	background: #003670;
+	color: white;
+}
+
+.nh-header-inner {
+	max-width: 1100px;
+	margin: 0 auto;
+	padding: 0 20px;
+
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+}
+
+.nh-header-center {
+	flex: 1;
+	display: flex;
+	justify-content: center;
+}
+
+.nh-logo {
+	height: 60px;
+}
+
+.nh-inline-form {
+	display: flex;
+	gap: 10px;
+	justify-content: center;
+	align-items: center;
+}
+
+.nh-global-header .nh-inline-form {
+	display: flex;
+	gap: 10px;
+}
+
+.nh-global-header .nh-inline-form input {
+	padding: 6px;
+	border-radius: 4px;
+	border: 1px solid #ccc;
+}
+
+.nh-btn-add {
+	background: #ffcc00;
+	border: none;
+	padding: 8px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: bold;
+}
+
+.nh-back-link {
+	color: white;
+	font-weight: bold;
+	text-decoration: none;
+}
+.nh-back-link:hover {
+	text-decoration: underline;
+}
+
+.nh-error {
+	color: red;
+	margin-left: 20px;
+}
+
+.nh-user-link {
+	color: #003670;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+.nh-user-link:hover {
+	text-decoration: underline;
+}
+
+.nh-controls {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: 20px 0;
+	gap: 20px;
+}
+
+.nh-controls-item {
+	flex: 1;
+	display: flex;
+	justify-content: center;
+}
+
+.nh-controls-item:first-child {
+	justify-content: flex-start;
+}
+
+.nh-controls-item:last-child {
+	justify-content: flex-end;
+}
+
+/* Clear Search Button styling */
+.nh-clear-btn {
+	background: #ffcc00;
+	border: none;
+	padding: 8px 14px;
+	border-radius: 4px;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.nh-clear-btn:hover {
+	background: #e6b800;
+}
