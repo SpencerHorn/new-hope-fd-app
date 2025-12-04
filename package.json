@@ -3,6 +3,7 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"build": "cross-env BUILD_ENV=build svelte-kit sync && vite build",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && svelte-kit sync",
