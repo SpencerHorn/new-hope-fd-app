@@ -11,9 +11,9 @@ services:
 
     startCommand: node build
 
-    # Node version now goes under "runtime" block
     envVars:
-      NODE_VERSION: 22
+      - key: NODE_VERSION
+        value: '22'
 
     disk:
       name: newhopefd-data
