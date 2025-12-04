@@ -1,7 +1,7 @@
 services:
   - type: web
     name: newhopefd-app
-    env: node
+    runtime: node
     plan: starter
     region: oregon
 
@@ -11,7 +11,9 @@ services:
 
     startCommand: node build
 
-    nodeVersion: 22
+    # Node version now goes under "runtime" block
+    envVars:
+      NODE_VERSION: 22
 
     disk:
       name: newhopefd-data
