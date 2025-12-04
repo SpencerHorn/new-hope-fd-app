@@ -1,37 +1,55 @@
+// src/lib/db/client.ts
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
 
-let dbPath = 'newhopefd.db';
-
-// Detect SvelteKit build (BUILD_ENV set in build command)
+// Determine environment
+const isProd = process.env.NODE_ENV === 'production';
 const isBuild = process.env.BUILD_ENV === 'build';
 
-// Runtime-only environment (Render sets NODE_ENV=production when serving)
-const isRuntime = !isBuild && process.env.NODE_ENV === 'production';
+// DB paths
+const LOCAL_DB = 'newhopefd.db';
+const PROD_DB = '/var/data/newhopefd.db';
 
-if (isRuntime) {
-	// Render persistent disk
-	dbPath = '/var/data/newhopefd.db';
+// Cached instance
+let dbInstance: ReturnType<typeof drizzle> | null = null;
 
-	// SAFE RUNTIME-ONLY FILESYSTEM ACCESS
-	try {
-		const fs = await import('fs');
+export function getDB() {
+	// If already initialized, return cached
+	if (dbInstance) return dbInstance;
 
+	// Skip DB access during build
+	if (isBuild) {
+		throw new Error('Attempted DB access during build.');
+	}
+
+	const dbPath = isProd ? PROD_DB : LOCAL_DB;
+
+	// Only check/create files in production runtime
+	if (isProd) {
+		// Dynamic import avoids require() issues
+		const fs = requireFS();
+
+		// Ensure directory exists
 		if (!fs.existsSync('/var/data')) {
 			fs.mkdirSync('/var/data', { recursive: true });
 		}
 
+		// Ensure database file exists
 		if (!fs.existsSync(dbPath)) {
 			fs.writeFileSync(dbPath, '');
 		}
-	} catch (err) {
-		console.error('Failed to initialize SQLite runtime file:', err);
 	}
+
+	// Open DB
+	const sqlite = new Database(dbPath);
+	dbInstance = drizzle(sqlite, { schema });
+
+	console.log(`SQLite DB loaded at ${dbPath}`);
+	return dbInstance;
 }
 
-// IMPORTANT: this must run ONLY after dbPath is finalized
-export const sqlite = new Database(dbPath);
-export const db = drizzle(sqlite, { schema });
-
-console.log(`SQLite loaded from: ${dbPath} | build=${isBuild} runtime=${isRuntime}`);
+// Wrapper for fs import that avoids bundling issues
+function requireFS() {
+	return eval('require')('fs');
+}

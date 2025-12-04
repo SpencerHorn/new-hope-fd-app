@@ -1,14 +1,18 @@
+// src/routes/api/roster/station/+server.ts
 import { json } from '@sveltejs/kit';
-import { db } from '$lib/db/client';
-import { users, onboardingItems, userOnboardingStatus } from '$lib/db/schema';
+import { getDB } from '$lib/db/client';
+import { users } from '$lib/db/schema';
 
 export const GET = async () => {
+	const db = getDB();
+
 	const roster = db
 		.select({
 			lastName: users.lastName,
 			firstName: users.firstName,
 			phone: users.phone,
-			workEmail: users.workEmail
+			workEmail: users.workEmail,
+			role: users.role
 		})
 		.from(users)
 		.orderBy(users.lastName)

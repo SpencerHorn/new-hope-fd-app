@@ -1,15 +1,19 @@
+// src/routes/api/roster/management/+server.ts
 import { json } from '@sveltejs/kit';
-import { db } from '$lib/db/client';
-import { users, onboardingItems, userOnboardingStatus } from '$lib/db/schema';
+import { getDB } from '$lib/db/client';
+import { users } from '$lib/db/schema';
 import { inArray } from 'drizzle-orm';
 
 export const GET = async () => {
+	const db = getDB();
+
 	const roster = db
 		.select({
 			lastName: users.lastName,
 			firstName: users.firstName,
 			phone: users.phone,
-			personalEmail: users.personalEmail
+			personalEmail: users.personalEmail,
+			role: users.role
 		})
 		.from(users)
 		.where(inArray(users.role, ['volunteer', 'employee']))

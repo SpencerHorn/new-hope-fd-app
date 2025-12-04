@@ -1,17 +1,20 @@
+// src/routes/api/elevate/[id]/+server.ts
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { db } from '$lib/db/client';
-import { users, onboardingItems, userOnboardingStatus } from '$lib/db/schema';
+import { getDB } from '$lib/db/client';
+import { users } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 
-export const POST: RequestHandler = async ({ request, params }) => {
-	const { role, workEmail, fitTestDate, maskSize, tshirtSize } = await request.json();
+// PATCH /api/elevate/:id
+export const PATCH: RequestHandler = async ({ params, request }) => {
+	const db = getDB();
+	const id = Number(params.id);
+	const { role } = await request.json();
 
-	const updated = await db
-		.update(users)
-		.set({ role, workEmail, fitTestDate, maskSize, tshirtSize })
-		.where(eq(users.id, Number(params.id)))
-		.returning()
-		.get();
+	if (!['probationary', 'volunteer', 'employee'].includes(role)) {
+		return json({ message: 'Invalid role' }, { status: 400 });
+	}
 
-	return json({ success: true, user: updated });
+	const updated = db.update(users).set({ role }).where(eq(users.id, id)).returning().get();
+
+	return json(updated);
 };

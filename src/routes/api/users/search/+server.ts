@@ -1,20 +1,19 @@
-import { json } from '@sveltejs/kit';
-import { db } from '$lib/db/client';
+// src/routes/api/users/search/+server.ts
+import { json, type RequestHandler } from '@sveltejs/kit';
+import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
 import { like, or } from 'drizzle-orm';
 
-export async function GET({ url }) {
-	const query = url.searchParams.get('q')?.trim();
+// GET /api/users/search?query=John
+export const GET: RequestHandler = async ({ url }) => {
+	const db = getDB();
+	const q = url.searchParams.get('query')?.trim();
 
-	if (!query) {
-		// No search input → return empty list, not entire DB
-		return json([]);
-	}
+	if (!q) return json([]);
 
-	const pattern = `%${query}%`;
+	const pattern = `%${q}%`;
 
-	// Build OR search across all text fields
-	const results = await db
+	const results = db
 		.select()
 		.from(users)
 		.where(
@@ -22,14 +21,10 @@ export async function GET({ url }) {
 				like(users.firstName, pattern),
 				like(users.lastName, pattern),
 				like(users.personalEmail, pattern),
-				like(users.workEmail, pattern),
-				like(users.phone, pattern),
-				like(users.role, pattern),
-				like(users.maskSize, pattern),
-				like(users.tshirtSize, pattern),
-				like(users.fitTestDate, pattern)
+				like(users.phone, pattern)
 			)
-		);
+		)
+		.all();
 
 	return json(results);
-}
+};

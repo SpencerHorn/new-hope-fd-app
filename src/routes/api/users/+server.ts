@@ -1,60 +1,45 @@
+// src/routes/api/users/+server.ts
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { db } from '$lib/db/client';
+import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 
-// HELPER FUNCTIONS
-function normalizePhone(raw: string): string | null {
-	const digits = raw.replace(/\D/g, '');
-	if (digits.length !== 10) return null;
-	return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-}
-
-function formatName(name: string): string {
-	if (!name) return name;
-	return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-}
-
-// GET all users
+// GET /api/users
 export const GET: RequestHandler = async () => {
-	const allUsers = await db.select().from(users);
-	return json(allUsers);
+	const db = getDB();
+
+	const result = db.select().from(users).all();
+	return json(result);
 };
 
-// CREATE user
+// POST /api/users
 export const POST: RequestHandler = async ({ request }) => {
+	const db = getDB();
 	const data = await request.json();
-	const { firstName, lastName, personalEmail, phone } = data;
 
-	const normalizedPhone = normalizePhone(phone);
-	if (!normalizedPhone) {
-		return json({ success: false, message: 'Phone number must be 10 digits.' }, { status: 400 });
+	// Ensure required fields
+	if (!data.firstName || !data.lastName || !data.personalEmail || !data.phone) {
+		return json({ message: 'Missing required fields' }, { status: 400 });
 	}
 
-	const formattedFirst = formatName(firstName);
-	const formattedLast = formatName(lastName);
+	// Prevent duplicate phone numbers
+	const existing = db.select().from(users).where(eq(users.phone, data.phone)).get();
 
-	// Prevent duplicate phone
-	const existing = await db.select().from(users).where(eq(users.phone, normalizedPhone));
-
-	if (existing.length > 0) {
-		return json(
-			{ success: false, message: 'A user with this phone already exists' },
-			{ status: 400 }
-		);
+	if (existing) {
+		return json({ message: 'A user with this phone number already exists.' }, { status: 400 });
 	}
 
-	const newUser = await db
+	const inserted = db
 		.insert(users)
 		.values({
-			firstName: formattedFirst,
-			lastName: formattedLast,
-			personalEmail,
-			phone: normalizedPhone,
+			firstName: data.firstName,
+			lastName: data.lastName,
+			personalEmail: data.personalEmail,
+			phone: data.phone,
 			role: 'probationary'
 		})
 		.returning()
 		.get();
 
-	return json({ success: true, id: newUser.id });
+	return json(inserted, { status: 201 });
 };
