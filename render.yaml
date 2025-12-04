@@ -2,22 +2,17 @@ services:
   - type: web
     name: newhopefd-app
     env: node
-    plan: starter # or 'free' if available
-    region: oregon # optional, but US-west is typically fastest
+    plan: starter
+    region: oregon
 
-    # Install dependencies and build the SvelteKit app
     buildCommand: |
       npm install
       npm run build
 
-    # Run the Node server build output
-    startCommand: |
-      node build/index.js
+    startCommand: node build
 
-    # The Node version must match your local version (you are on Node 22.x)
     nodeVersion: 22
 
-    # Attach persistent disk for SQLite
     disk:
       name: newhopefd-data
       mountPath: /var/data
