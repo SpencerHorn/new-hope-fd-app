@@ -2,37 +2,34 @@ import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
 import fs from 'fs';
-import path from 'path';
 
-// Detect build vs runtime
 const isBuild = process.env.BUILD_ENV === 'build';
 
-let dbPath = 'newhopefd.db'; // local development
+let dbPath = 'newhopefd.db';
 
+// If building on Render → DO NOT touch /var/data
 if (!isBuild && process.env.NODE_ENV === 'production') {
-	// Runtime on Render
 	dbPath = '/var/data/newhopefd.db';
 
-	// Ensure /var/data exists
+	// Make sure /var/data exists at runtime
 	if (!fs.existsSync('/var/data')) {
 		fs.mkdirSync('/var/data', { recursive: true });
 	}
 
-	// Ensure database file exists
+	// Create DB if missing
 	if (!fs.existsSync(dbPath)) {
 		fs.writeFileSync(dbPath, '');
-		console.log('Created SQLite database:', dbPath);
+		console.log('Created SQLite DB at', dbPath);
 	}
 }
 
-// DO NOT open SQLite during build!
-if (isBuild) {
-	console.log('Skipping SQLite initialization during build.');
-	// Return a placeholder — SvelteKit build won't actually query DB.
-	export const db = {} as any;
-} else {
-	const sqlite = new Database(dbPath);
-	console.log(`SQLite DB loaded from: ${dbPath}`);
+// Always export db, but only initialize SQLite at runtime
+export const db = isBuild
+	? ({} as any) // Placeholder during build — avoids Rollup errors
+	: drizzle(new Database(dbPath), { schema });
 
-	export const db = drizzle(sqlite, { schema });
+if (!isBuild) {
+	console.log(`SQLite loaded from: ${dbPath}`);
+} else {
+	console.log('Skipping SQLite init during build');
 }
