@@ -19,7 +19,8 @@
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
 		"start": "node build",
-		"seed:admin": "tsx scripts/seed-admin.ts"
+		"seed:admin": "tsx scripts/seed-admin.ts",
+		"init:prod": "node scripts/init.js"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",
