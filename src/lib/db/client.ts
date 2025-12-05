@@ -18,10 +18,8 @@ export function getDB() {
 	let dbPath: string;
 
 	if (isBuild) {
-		// During SvelteKit build: NO filesystem access allowed
-		dbPath = ':memory:';
+		dbPath = ':memory:'; // cannot write to FS during build
 	} else if (isProd) {
-		// Render runtime: use persistent volume
 		dbPath = PROD_DB;
 
 		if (!fs.existsSync('/var/data')) {
@@ -31,11 +29,12 @@ export function getDB() {
 			fs.writeFileSync(dbPath, '');
 		}
 	} else {
-		// Local development
 		dbPath = LOCAL_DB;
 	}
 
 	const sqlite = new Database(dbPath);
+
+	// ❗ ONLY schema goes here — no migrations option!
 	dbInstance = drizzle(sqlite, { schema });
 
 	console.log(`SQLite DB loaded from ${dbPath} (prod=${isProd}, build=${isBuild})`);
