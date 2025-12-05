@@ -1,23 +1,21 @@
 // src/hooks.server.ts
-import type { Handle } from '@sveltejs/kit';
-import { redirect } from '@sveltejs/kit';
 import { validateRequest } from '$lib/server/auth';
+import { redirect } from '@sveltejs/kit';
 
-export const handle: Handle = async ({ event, resolve }) => {
-	const { user } = await validateRequest(event);
+export const handle = async ({ event, resolve }) => {
+	const { user, session } = await validateRequest(event);
+
 	event.locals.user = user;
+	event.locals.session = session;
 
-	const PUBLIC = ['/login', '/invite'];
-	const isInvite = event.url.pathname.startsWith('/invite');
+	const url = event.url.pathname;
 
-	if (!user) {
-		if (!PUBLIC.includes(event.url.pathname) && !isInvite) {
-			throw redirect(302, '/login');
-		}
-	} else {
-		if (event.url.pathname === '/login') {
-			throw redirect(302, '/');
-		}
+	if (!user && url !== '/login' && !url.startsWith('/invite')) {
+		throw redirect(302, '/login');
+	}
+
+	if (user && url === '/login') {
+		throw redirect(302, '/');
 	}
 
 	return resolve(event);

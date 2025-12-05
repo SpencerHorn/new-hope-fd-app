@@ -1,60 +1,64 @@
 // src/lib/server/auth.ts
-import type { RequestEvent } from '@sveltejs/kit';
 import { Lucia } from 'lucia';
 import { DrizzleSQLiteAdapter } from '@lucia-auth/adapter-drizzle';
 import { getDB } from '$lib/db/client';
 import { authUsers, authSessions } from '$lib/db/schema';
 
-const db = await getDB();
-const adapter = new DrizzleSQLiteAdapter(db, authSessions, authUsers);
+let luciaInstance: Lucia | null = null;
 
-export const lucia = new Lucia(adapter, {
-	sessionCookie: {
-		attributes: {
-			secure: process.env.NODE_ENV === 'production'
-		}
-	},
-	getUserAttributes: (attributes) => ({
-		email: attributes.email
-	})
-});
+export async function getLucia() {
+	if (luciaInstance) return luciaInstance;
 
-export async function validateRequest(event: RequestEvent) {
+	const db = await getDB();
+
+	const adapter = new DrizzleSQLiteAdapter(db, authSessions, authUsers);
+
+	luciaInstance = new Lucia(adapter, {
+		sessionCookie: {
+			attributes: {
+				secure: process.env.NODE_ENV === 'production'
+			}
+		},
+		getUserAttributes: (a) => ({
+			email: a.email
+		})
+	});
+
+	return luciaInstance;
+}
+
+// Helper for hooks.server.ts
+export async function validateRequest(event) {
+	const lucia = await getLucia();
+
 	const sessionId = event.cookies.get('auth_session');
+	if (!sessionId) return { session: null, user: null };
 
-	if (!sessionId) {
-		return { user: null, session: null };
-	}
+	const result = await lucia.validateSession(sessionId);
 
-	const { session, user } = await lucia.validateSession(sessionId);
-
-	// If invalid session → clear cookie
-	if (!session) {
+	if (!result.session) {
 		event.cookies.set('auth_session', '', {
 			path: '/',
 			maxAge: 0
 		});
-		return { user: null, session: null };
 	}
 
-	// If fresh session → refresh cookie
-	if (session.fresh) {
-		const cookie = lucia.createSessionCookie(session.id);
+	// Refresh cookie
+	if (result.session?.fresh) {
+		const cookie = lucia.createSessionCookie(result.session.id);
 		event.cookies.set(cookie.name, cookie.value, {
-			...cookie.attributes,
-			path: cookie.attributes.path ?? '/'
+			path: '/',
+			...cookie.attributes
 		});
 	}
 
-	return { user, session };
+	return result;
 }
 
 declare module 'lucia' {
 	interface Register {
-		Lucia: typeof lucia;
+		Lucia: ReturnType<typeof Lucia>;
 		UserId: number;
-		DatabaseUserAttributes: {
-			email: string;
-		};
+		DatabaseUserAttributes: { email: string };
 	}
 }
