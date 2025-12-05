@@ -1,52 +1,49 @@
-import { fail, redirect } from '@sveltejs/kit';
+// src/routes/api/invite/[token]/+server.ts
+import { json } from '@sveltejs/kit';
 import { getDB } from '$lib/db/client';
 import { invites, authUsers } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { lucia } from '$lib/server/auth';
+import { getLucia } from '$lib/server/auth';
 import { Argon2id } from 'oslo/password';
 
-export const POST = async ({ request }) => {
-	const db = getDB();
-	const form = await request.formData();
+export async function POST({ params, request }) {
+	const db = await getDB();
+	const lucia = await getLucia();
 
-	const token = String(form.get('token'));
-	const password = String(form.get('password'));
-	const confirm = String(form.get('confirm'));
+	const token = params.token;
+	const { password } = await request.json();
 
-	if (password !== confirm) {
-		return fail(400, { error: 'Passwords do not match' });
+	// find invite row
+	const invite = await db.select().from(invites).where(eq(invites.token, token)).get();
+
+	if (!invite) {
+		return json({ error: 'Invalid invite token' }, { status: 400 });
 	}
 
-	const invite = db.select().from(invites).where(eq(invites.token, token)).get();
-
-	if (!invite || invite.used) {
-		throw redirect(302, '/login');
-	}
-
+	// hash password
 	const hashed = await new Argon2id().hash(password);
 
-	// Create user account
-	const user = db
+	// create user
+	const result = await db
 		.insert(authUsers)
 		.values({
 			email: invite.email,
-			hashed_password: hashed
+			password_hash: hashed
 		})
-		.returning()
-		.get();
+		.returning({ id: authUsers.id });
 
-	// Mark invite used
-	db.update(invites).set({ used: 1 }).where(eq(invites.id, invite.id)).run();
+	const userId = result[0].id;
 
-	// Auto-login after registration
-	const session = await lucia.createSession(user.id);
+	// delete invite
+	await db.delete(invites).where(eq(invites.token, token));
+
+	// create session
+	const session = await lucia.createSession(userId, {});
 	const sessionCookie = lucia.createSessionCookie(session.id);
 
-	return new Response(null, {
-		status: 302,
-		headers: {
-			Location: '/',
-			'Set-Cookie': sessionCookie.serialize()
-		}
+	return json({
+		sessionCookieName: sessionCookie.name,
+		sessionCookieValue: sessionCookie.value,
+		sessionCookieAttributes: sessionCookie.attributes
 	});
-};
+}
