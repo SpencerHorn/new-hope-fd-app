@@ -1,5 +1,6 @@
 // src/lib/db/client.ts
 import Database from 'better-sqlite3';
+import fs from 'fs';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
 
@@ -17,11 +18,11 @@ export function getDB() {
 	let dbPath: string;
 
 	if (isBuild) {
-		// During build, use in-memory DB so we don't touch the filesystem
+		// During SvelteKit build: NO filesystem access allowed
 		dbPath = ':memory:';
 	} else if (isProd) {
+		// Render runtime: use persistent volume
 		dbPath = PROD_DB;
-		const fs = eval('require')('fs') as typeof import('fs');
 
 		if (!fs.existsSync('/var/data')) {
 			fs.mkdirSync('/var/data', { recursive: true });
@@ -30,6 +31,7 @@ export function getDB() {
 			fs.writeFileSync(dbPath, '');
 		}
 	} else {
+		// Local development
 		dbPath = LOCAL_DB;
 	}
 
