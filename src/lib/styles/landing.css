@@ -1,3 +1,17 @@
+/* Reset */
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background: #f5f5f7;
+	color: #111827;
+	font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+}
+
+/* Constrain main content */
 main {
 	max-width: 1000px;
 	margin: 0 auto;
@@ -10,27 +24,7 @@ main {
 		sans-serif;
 }
 
-.nh-header {
-	display: flex;
-	align-items: center;
-	gap: 1.5rem;
-	background: #002c77;
-	padding: 1rem 1.25rem;
-	color: white;
-	border-radius: 10px;
-	margin-bottom: 1rem;
-}
-
-.nh-header img {
-	height: 70px;
-}
-
-.nh-inline-form {
-	display: flex;
-	gap: 0.75rem;
-	align-items: center;
-	flex-wrap: wrap;
-}
+/* TABLE + CONTROLS + FORMS (unchanged styles from your existing setup) */
 
 .nh-inline-form input {
 	padding: 0.45rem 0.6rem;
@@ -60,13 +54,6 @@ main {
 	align-items: center;
 	margin-top: 0.75rem;
 	margin-bottom: 0.5rem;
-}
-
-.nh-sort-select {
-	padding: 0.3rem 0.5rem;
-	border-radius: 4px;
-	border: 1px solid #ccc;
-	font-size: 0.9rem;
 }
 
 .nh-table {
@@ -101,6 +88,7 @@ main {
 	padding: 0.4rem 0;
 }
 
+/* Modals */
 .modal-overlay {
 	position: fixed;
 	inset: 0;
@@ -141,171 +129,4 @@ main {
 	border: none;
 	border-radius: 5px;
 	cursor: pointer;
-}
-
-.nh-role-select {
-	padding: 0.3rem 0.5rem;
-	border-radius: 4px;
-	border: 1px solid #ccc;
-	font-size: 0.85rem;
-}
-
-/* === ROLE COLOR CODING === */
-.nh-row-probationary {
-	background: #fff9d9; /* pale yellow */
-}
-
-.nh-row-volunteer {
-	background: #e7f3ff; /* light blue */
-}
-
-.nh-row-employee {
-	background: #e6ffe6; /* very light green */
-}
-
-/* HEADER AREA — fully isolated */
-.nh-global-header {
-	display: flex;
-	align-items: center;
-	gap: 20px;
-	padding: 10px 20px;
-	background: #003670;
-	color: white;
-}
-
-.nh-header-inner {
-	max-width: 1100px;
-	margin: 0 auto;
-	padding: 0 20px;
-
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 20px;
-}
-
-.nh-header-center {
-	flex: 1;
-	display: flex;
-	justify-content: center;
-}
-
-.nh-logo {
-	height: 60px;
-}
-
-.nh-inline-form {
-	display: flex;
-	gap: 10px;
-	justify-content: center;
-	align-items: center;
-}
-
-.nh-global-header .nh-inline-form {
-	display: flex;
-	gap: 10px;
-}
-
-.nh-global-header .nh-inline-form input {
-	padding: 6px;
-	border-radius: 4px;
-	border: 1px solid #ccc;
-}
-
-.nh-btn-add {
-	background: #ffcc00;
-	border: none;
-	padding: 8px 12px;
-	border-radius: 4px;
-	cursor: pointer;
-	font-weight: bold;
-}
-
-.nh-back-link {
-	color: white;
-	font-weight: bold;
-	text-decoration: none;
-}
-.nh-back-link:hover {
-	text-decoration: underline;
-}
-
-.nh-error {
-	color: red;
-	margin-left: 20px;
-}
-
-.nh-user-link {
-	color: #003670;
-	text-decoration: none;
-	font-weight: bold;
-}
-
-.nh-user-link:hover {
-	text-decoration: underline;
-}
-
-.nh-controls {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin: 20px 0;
-	gap: 20px;
-}
-
-.nh-controls-item {
-	flex: 1;
-	display: flex;
-	justify-content: center;
-}
-
-.nh-controls-item:first-child {
-	justify-content: flex-start;
-}
-
-.nh-controls-item:last-child {
-	justify-content: flex-end;
-}
-
-/* Clear Search Button styling */
-.nh-clear-btn {
-	background: #ffcc00;
-	border: none;
-	padding: 8px 14px;
-	border-radius: 4px;
-	font-weight: bold;
-	cursor: pointer;
-}
-
-.nh-clear-btn:hover {
-	background: #e6b800;
-}
-
-.nh-header-right {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-
-.logout {
-	padding: 6px 12px;
-	background: #b40606;
-	color: white;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-}
-
-.nh-btn-invite {
-	background: #2b6cb0;
-	color: white;
-	padding: 6px 12px;
-	border-radius: 6px;
-	border: none;
-	cursor: pointer;
-	margin-right: 8px;
-}
-
-.nh-btn-invite:hover {
-	background: #2c5282;
 }
