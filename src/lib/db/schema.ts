@@ -2,38 +2,61 @@ import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
 export const users = sqliteTable('users', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  firstName: text('first_name').notNull(),
-  lastName: text('last_name').notNull(),
-  personalEmail: text('personal_email').notNull(),
-  phone: text('phone').notNull(),
-  role: text('role').notNull().default('probationary'),
-  workEmail: text('work_email'),
-  fitTestDate: text('fit_test_date'),
-  maskSize: text('mask_size'),
-  tshirtSize: text('tshirt_size'),
-  createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
-  updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	firstName: text('first_name').notNull(),
+	lastName: text('last_name').notNull(),
+	address: text('address'),
+	personalEmail: text('personal_email').notNull(),
+	phone: text('phone').notNull(),
+	role: text('role').notNull().default('probationary'),
+	workEmail: text('work_email'),
+	fitTestDate: text('fit_test_date'),
+	maskSize: text('mask_size'),
+	tshirtSize: text('tshirt_size'),
+	createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
+	updatedAt: text('updated_at').default('CURRENT_TIMESTAMP')
 });
 
 export const onboardingItems = sqliteTable('onboarding_items', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  title: text('title').notNull(),
-  order: integer('order').default(0),
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	title: text('title').notNull(),
+	order: integer('order').default(0)
 });
 
 export const userOnboardingStatus = sqliteTable('user_onboarding_status', {
-  userId: integer('user_id')
-    .notNull()
-    .references(() => users.id),
-  itemId: integer('item_id')
-    .notNull()
-    .references(() => onboardingItems.id),
-  completed: integer('completed').default(0),
-  completedAt: text('completed_at'),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	itemId: integer('item_id')
+		.notNull()
+		.references(() => onboardingItems.id),
+	completed: integer('completed').default(0),
+	completedAt: text('completed_at')
 });
 
 // Relations
 export const userRelations = relations(users, ({ many }) => ({
-  onboarding: many(userOnboardingStatus),
+	onboarding: many(userOnboardingStatus)
 }));
+
+export const authUsers = sqliteTable('auth_users', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	email: text('email').notNull().unique(),
+	password_hash: text('password_hash').notNull()
+});
+
+export const authSessions = sqliteTable('auth_sessions', {
+	id: text('id').primaryKey(),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => authUsers.id, { onDelete: 'cascade' }),
+	expiresAt: integer('expires_at').notNull()
+});
+
+export const invites = sqliteTable('invites', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	email: text('email').notNull(),
+	token: text('token').notNull(),
+	createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
+	used: integer('used').default(0) // 0 = not used, 1 = used
+});
