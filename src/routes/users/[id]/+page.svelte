@@ -29,6 +29,9 @@
 		<label>Last Name</label>
 		<input bind:value={user.lastName} />
 
+		<label for="address">Address</label>
+		<input id="address" bind:value={user.address} placeholder="123 Main St" />
+
 		<label>Personal Email</label>
 		<input type="email" bind:value={user.personalEmail} />
 
