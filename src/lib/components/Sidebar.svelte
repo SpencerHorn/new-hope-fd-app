@@ -1,24 +1,36 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import RosterModal from '$lib/components/RosterModal.svelte';
+
+	// Controls opening/closing of roster modal
+	let rosterOpen = false;
+
 	export let user: any;
 </script>
 
 <aside class="sidebar">
 	<nav class="main-nav">
-		<!-- <img src="/NewHopeLogo.png" alt="NHFD Logo" class="logo" /> -->
 		<a href="/" class:selected={$page.url.pathname === '/'}>Home</a>
+
+		<!-- Roster Modal Trigger -->
+		<button class="sidebar-btn" on:click={() => (rosterOpen = true)}> Roster </button>
 	</nav>
 
-	<!-- Bottom-fixed actions -->
+	<!-- Bottom actions -->
 	<div class="sidebar-actions">
 		<button class="sidebar-btn" on:click={() => goto('/invite/create')}> Invite User </button>
 
 		<form method="POST" action="/logout">
-			<button type="submit" class="sidebar-btn"> Logout </button>
+			<button type="submit" class="sidebar-btn">Logout</button>
 		</form>
 	</div>
 </aside>
+
+<!-- Modal mount -->
+{#if rosterOpen}
+	<RosterModal on:close={() => (rosterOpen = false)} />
+{/if}
 
 <style>
 	.sidebar {
@@ -95,6 +107,12 @@
 
 	.sidebar-btn:hover {
 		background: #f0f0f0;
+	}
+
+	a.selected {
+		background: #111827;
+		color: white;
+		font-weight: 600;
 	}
 
 	form {
