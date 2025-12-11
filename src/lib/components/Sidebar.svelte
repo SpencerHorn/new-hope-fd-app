@@ -3,8 +3,10 @@
 	import { page } from '$app/stores';
 	import RosterModal from '$lib/components/RosterModal.svelte';
 
-	// Controls opening/closing of roster modal
 	let rosterOpen = false;
+
+	// Legacy Apps collapse state
+	let legacyOpen = false;
 
 	export let user: any;
 </script>
@@ -14,12 +16,24 @@
 		<a href="/" class:selected={$page.url.pathname === '/'}>Home</a>
 
 		<!-- Roster Modal Trigger -->
-		<button class="sidebar-btn" on:click={() => (rosterOpen = true)}> Roster </button>
+		<button class="sidebar-btn" on:click={() => (rosterOpen = true)}>Roster</button>
+
+		<!-- Legacy Apps Toggle -->
+		<button class="sidebar-btn" on:click={() => (legacyOpen = !legacyOpen)}>
+			Legacy Apps {legacyOpen ? '▾' : '▸'}
+		</button>
+
+		<!-- Collapsible Legacy Links -->
+		{#if legacyOpen}
+			<a href="/NHFD_Admin.html" class="legacy-link">Admin</a>
+			<a href="/NHFD_Training.html" class="legacy-link">Training</a>
+			<a href="/NHFD_Roster.html" class="legacy-link">Roster</a>
+		{/if}
 	</nav>
 
 	<!-- Bottom actions -->
 	<div class="sidebar-actions">
-		<button class="sidebar-btn" on:click={() => goto('/invite/create')}> Invite User </button>
+		<button class="sidebar-btn" on:click={() => goto('/invite/create')}>Invite User</button>
 
 		<form method="POST" action="/logout">
 			<button type="submit" class="sidebar-btn">Logout</button>
@@ -50,14 +64,6 @@
 		gap: 2px;
 	}
 
-	/* .main-nav img {
-		margin: 0;
-		padding: 0;
-		width: 100%;
-		margin-bottom: 12px;
-	} */
-
-	/* Navigation link */
 	.main-nav a {
 		display: block;
 		width: 80%;
@@ -89,7 +95,7 @@
 		gap: 10px;
 	}
 
-	/* Button & link matching visual style */
+	/* Buttons (Roster, Legacy Apps, Invite, Logout) */
 	.sidebar-btn {
 		all: unset;
 		display: block;
@@ -109,10 +115,22 @@
 		background: #f0f0f0;
 	}
 
-	a.selected {
-		background: #111827;
-		color: white;
-		font-weight: 600;
+	/* Style for collapsible links */
+	.legacy-link {
+		display: block;
+		width: 75%;
+		margin-left: 10px;
+		padding: 5px 6px;
+		border-radius: 5px;
+		font-size: 13px;
+		background: #f4f4f4;
+		border: 1px solid #dcdcdc;
+		color: #111;
+		text-decoration: none;
+	}
+
+	.legacy-link:hover {
+		background: #ececec;
 	}
 
 	form {
