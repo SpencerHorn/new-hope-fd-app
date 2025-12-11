@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NHFD Personnel Equipment Form</title>
+
+  <link rel="stylesheet" href="src/nhfdAdmin.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+  <div class="paper-container">
+
+    <!-- PDF / Clear buttons -->
+    <div class="pdf-export">
+      <button class="export-btn" onclick="exportToPDF()">Save as PDF</button>
+      <button class="clear-btn" onclick="clearForm()">Clear Form</button>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <div class="title-with-logo">
+          <img src="src/assets/new_hope_logo.webp" class="logo-image" />
+          <h1>NHFD Personnel Information</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Body -->
+    <div class="form-section">
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Last Name:</label>
+          <input id="last" type="text" />
+        </div>
+
+        <div class="form-field">
+          <label>First Name:</label>
+          <input id="first" type="text" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Phone Number:</label>
+          <input id="phone" type="text" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Work Email:</label>
+          <input id="workEmail" type="text" />
+        </div>
+
+        <div class="form-field">
+          <label>Personal Email:</label>
+          <input id="personalEmail" type="text" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Mask Size:</label>
+          <input id="maskSize" type="text" />
+        </div>
+
+        <div class="form-field">
+          <label>Last Mask Fit Test:</label>
+          <input id="maskFit" type="date" />
+        </div>
+
+        <div class="form-field">
+          <label>T-Shirt Size:</label>
+          <input id="shirtSize" type="text" />
+        </div>
+      </div>
+
+    </div>
+    <div class="management-controls">
+        <button class="save-btn" onclick="addMember()">Save Member</button>
+    </div>
+
+    <hr>
+
+    <!-- Display Section -->
+    <h3>Saved Personnel Records</h3>
+
+    <table class="attendance-table" id="ppeTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Work Email</th>
+          <th>Personal Email</th>
+          <th>Mask Size</th>
+          <th>Mask Fit</th>
+          <th>T-Shirt</th>
+          <th>Delete</th>
+      </tr>
+    </thead>
+      <tbody id="ppeList"></tbody>
+    </table>
+
+    <div class="footer">NHFD PPE Form</div>
+
+  </div>
+
+  <script src="src/nhfdAdmin.js"></script>
+</body>
+</html>

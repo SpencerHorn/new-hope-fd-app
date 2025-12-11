@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Hope Fire Department Roster</title>
+    <link rel="stylesheet" href="src/nhfdRoster.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  </head>
+<body>
+  <div class="paper-container">
+    <div class="pdf-export">
+      <button class="export-btn" onclick="exportToPDF()">Save as PDF</button>
+      <button class="clear-btn" onclick="clearForm()">Clear Form</button>
+    </div>
+
+    <div class="header">
+      <div class="header-content">
+        <div class="title-with-logo">
+          <img src="src/assets/new_hope_logo.webp" alt="New Hope Fire Department Logo" class="logo-image" />
+          <h1>New Hope Fire Department Roster</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Roster management controls -->
+    <div class="volunteer-management">
+      <strong>Manage Roster:</strong><br />
+      <input type="text" id="lastName" placeholder="Last Name" style="width: 150px" />
+      <input type="text" id="firstName" placeholder="First Name" style="width: 150px" />
+      <input type="text" id="phone" placeholder="Phone" style="width: 130px" />
+      <input type="text" id="email" placeholder="Email" style="width: 200px" />
+      <button onclick="addVolunteer()">Add Member</button>
+      <small>Format: Lastname, Firstname</small>
+    </div>
+
+    <div class="management-controls">
+      <button class="save-btn" onclick="saveRoster()">Save Roster</button>
+      <button class="save-btn" onclick="resetToOriginal()">Reset to Original</button>
+    </div>
+
+    <table class="attendance-table roster-table" id="rosterTable">
+      <thead>
+        <tr>
+          <!-- Column set for first member in the row -->
+          <th class="name-column">Member</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <!-- Column set for second member in the row -->
+          <th class="name-column">Member</th>
+          <th>Phone</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody id="volunteerList">
+        <!-- roster rows will be dynamically added here -->
+      </tbody>
+    </table>
+
+    <div class="footer">
+    Version: 
+      <input 
+        id="versionField" 
+        type="text" 
+        style="border: none; font-size: 9px; width: 150px;"
+        />
+    </div>
+
+    <script src="src/nhfdRoster.js"></script>
+  </div>
+  </body>
+</html>

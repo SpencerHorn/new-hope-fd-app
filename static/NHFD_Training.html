@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Hope Fire Department Training Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            line-height: 1.3;
+            font-size: 11px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-width: 120px;
+        }
+        .logo {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background: white;
+        }
+        .logo-top {
+            font-size: 10px;
+            line-height: 1;
+        }
+        .logo-main {
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1;
+        }
+        .logo-bottom {
+            font-size: 8px;
+            line-height: 1;
+        }
+        .logo-text {
+            font-size: 9px;
+            margin-top: 2px;
+            font-weight: bold;
+        }
+        .header-content {
+            flex: 1;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 16px;
+        }
+        .form-section {
+            margin-bottom: 12px;
+        }
+        .form-row {
+            display: flex;
+            margin-bottom: 6px;
+            gap: 10px;
+        }
+        .form-field {
+            flex: 1;
+        }
+        label {
+            display: block;
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 1px;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            border: 1px solid #000;
+            padding: 3px;
+            font-size: 10px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 50px;
+            resize: vertical;
+        }
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 9px;
+        }
+        .attendance-table th, .attendance-table td {
+            border: 1px solid #000;
+            padding: 2px;
+            text-align: center;
+        }
+        .attendance-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        .name-column {
+            text-align: left;
+            width: 20%;
+        }
+        .name-cell {
+            text-align: left;
+            padding-left: 4px;
+            position: relative;
+        }
+        .checkbox-cell {
+            width: 20px;
+        }
+        input[type="checkbox"] {
+            transform: scale(0.7);
+            margin: 0;
+        }
+        .legend {
+            text-align: center;
+            margin: 8px 0;
+            font-size: 9px;
+            font-weight: bold;
+        }
+        .signature-line {
+            margin-top: 20px;
+            width: 180px;
+            padding-top: 1px;
+            font-size: 10px;
+        }
+        .footer {
+            margin-top: 15px;
+            font-size: 9px;
+            text-align: right;
+        }
+        .volunteer-management {
+            margin: 8px 0;
+            padding: 8px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            font-size: 10px;
+        }
+        .volunteer-management input {
+            margin-right: 8px;
+            padding: 3px;
+            font-size: 10px;
+        }
+        .volunteer-management button {
+            padding: 3px 6px;
+            margin: 0 2px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        .delete-btn {
+            color: red;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 3px;
+            padding: 0 2px;
+        }
+        .delete-btn:hover {
+            background-color: #ffe6e6;
+        }
+        .reset-btn {
+            background-color: #ffeb3b;
+            border: 1px solid #ccc;
+            padding: 3px 6px;
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        .management-controls {
+            margin: 8px 0;
+            text-align: center;
+        }
+        .pdf-export {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .export-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 11px;
+            border-radius: 3px;
+        }
+        .export-btn:hover {
+            background-color: #45a049;
+        }
+        @media print {
+            .volunteer-management, .management-controls, .pdf-export, .delete-btn {
+                display: none !important;
+            }
+            body {
+                padding: 10px;
+                font-size: 10px;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="pdf-export">
+        <button class="export-btn" onclick="exportToPDF()">Save as PDF</button>
+    </div>
+
+    <div class="header">
+        <div class="logo-container">
+            <div class="logo">
+                <div class="logo-top">NEW HOPE</div>
+                <div class="logo-main">FIRE DEPT.</div>
+                <div class="logo-bottom">VOLUNTEERS</div>
+            </div>
+            <div class="logo-text">Serving Our Community</div>
+        </div>
+        <div class="header-content">
+            <h1>New Hope Fire Department Training Report</h1>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="form-row">
+            <div class="form-field">
+                <label>Name of Instructor:</label>
+                <input type="text" name="instructor">
+            </div>
+            <div class="form-field">
+                <label>Date:</label>
+                <input type="text" name="date">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-field">
+                <label>Time Started:</label>
+                <input type="text" name="time_started">
+            </div>
+            <div class="form-field">
+                <label>Time Finished:</label>
+                <input type="text" name="time_finished">
+            </div>
+            <div class="form-field">
+                <label>Duration:</label>
+                <input type="text" name="duration">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-field">
+                <label>Subject Covered:</label>
+                <input type="text" name="subject">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-field">
+                <label>Location of Training:</label>
+                <input type="text" name="location">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-field">
+                <label>Equipment and Training Aids Used:</label>
+                <input type="text" name="equipment">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-field">
+                <label>Description of Training:</label>
+                <textarea name="description"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="volunteer-management">
+        <strong>Manage Volunteers:</strong><br>
+        <input type="text" id="newVolunteerName" placeholder="Last, First" style="width: 150px;">
+        <button onclick="addVolunteer()">Add Volunteer</button>
+        <small>Format: Lastname, Firstname</small>
+    </div>
+
+    <div class="management-controls">
+        <button class="reset-btn" onclick="resetToOriginal()">Reset to Original Volunteer List</button>
+    </div>
+
+    <div class="legend">
+        T-Training | O-Officer | D-Driver | N-New Driver | H-Haz Mat | R-Recruit | E-EMS
+    </div>
+
+    <table class="attendance-table" id="attendanceTable">
+        <thead>
+            <tr>
+                <th class="name-column">Initial by your name</th>
+                <th>T</th>
+                <th>O</th>
+                <th>D</th>
+                <th>N</th>
+                <th>H</th>
+                <th>R</th>
+                <th>E</th>
+                <th class="name-column">Initial by your name</th>
+                <th>T</th>
+                <th>O</th>
+                <th>D</th>
+                <th>N</th>
+                <th>H</th>
+                <th>R</th>
+                <th>E</th>
+            </tr>
+        </thead>
+        <tbody id="volunteerList">
+            <!-- Volunteers will be dynamically added here -->
+        </tbody>
+    </table>
+
+    <div class="form-row">
+        <div class="form-field">
+            <label>Instructor Signature:</label>
+            <input type="text" name="signature" class="signature-line">
+        </div>
+    </div>
+
+    <div class="footer">
+        NHFD Version 10/4/2025
+    </div>
+
+    <script>
+        // Initial volunteer data
+        const initialVolunteers = [
+            "Bass, Autumn", "Baw, Htoo", "Bergen, Gavin", "Blalock, Brian", 
+            "Blalock, Luke", "Blankenship, Bill", "Bravo, Ariadna", "Burton, Wayne",
+            "Callaway, Carl", "Capps, Jonathan", "Carroll, Cliff", "Castelloe, Mike",
+            "Cherry, Ricky", "Ellis, Shawn", "Givens, Ryan", "Greenlee, Jimmy",
+            "Greenlee, Zachary", "Greenlee, Matthew", "Heizer, Xander", "Hernandez, Jocelyn",
+            "Horn, Spencer", "Horne, Harold", "Hunt, David", "Johnson, Curtis",
+            "Knotts, Bridget", "Kosek, Joshua", "Krishnakumar, Anish", "May, Ben",
+            "May, Matt", "McDowell, Jayson", "Nieves, Chris", "Payne, Brantley",
+            "Poe, Kwah", "Pratt, Howard", "Pulley, Jake", "Renner, Caleb",
+            "Rodriguez, Christina", "Tapp, Mike", "Tillmans, Fry", "Turner, Lindsey",
+            "Tyndall, Richard", "Velazquez, Luis", "Walker, Eddie", "Wall, Dusty",
+            "White, Brett", "Whitt, Blake", "Whitton, Amanda", "Wruck, Ian", "Yoder, Taylor"
+        ].sort();
+
+        let volunteers = [...initialVolunteers];
+
+        // Initialize the table
+        function initializeTable() {
+            renderVolunteers();
+        }
+
+        // Render volunteers in two-column format
+        function renderVolunteers() {
+            const tbody = document.getElementById('volunteerList');
+            tbody.innerHTML = '';
+            
+            // Split volunteers into rows of 2 columns
+            for (let i = 0; i < volunteers.length; i += 2) {
+                const row = document.createElement('tr');
+                
+                // First volunteer in row
+                if (volunteers[i]) {
+                    row.appendChild(createNameCell(volunteers[i]));
+                    for (let j = 0; j < 7; j++) {
+                        row.appendChild(createCheckboxCell(volunteers[i], j));
+                    }
+                } else {
+                    row.appendChild(createEmptyNameCell());
+                    for (let j = 0; j < 7; j++) {
+                        row.appendChild(createEmptyCell());
+                    }
+                }
+                
+                // Second volunteer in row
+                if (volunteers[i + 1]) {
+                    row.appendChild(createNameCell(volunteers[i + 1]));
+                    for (let j = 0; j < 7; j++) {
+                        row.appendChild(createCheckboxCell(volunteers[i + 1], j));
+                    }
+                } else {
+                    row.appendChild(createEmptyNameCell());
+                    for (let j = 0; j < 7; j++) {
+                        row.appendChild(createEmptyCell());
+                    }
+                }
+                
+                tbody.appendChild(row);
+            }
+        }
+
+        function createNameCell(volunteerName) {
+            const cell = document.createElement('td');
+            cell.className = 'name-cell';
+            
+            // Create container for name and delete button
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.justifyContent = 'space-between';
+            container.style.alignItems = 'center';
+            
+            // Volunteer name
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = volunteerName;
+            container.appendChild(nameSpan);
+            
+            // Delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.textContent = '×';
+            deleteBtn.title = `Remove ${volunteerName}`;
+            deleteBtn.onclick = function(e) {
+                e.stopPropagation();
+                removeVolunteer(volunteerName);
+            };
+            container.appendChild(deleteBtn);
+            
+            cell.appendChild(container);
+            return cell;
+        }
+
+        function createCheckboxCell(volunteerName, index) {
+            const cell = document.createElement('td');
+            cell.className = 'checkbox-cell';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = `volunteer_${volunteerName.replace(/[ ,]/g, '_')}_${index}`;
+            cell.appendChild(checkbox);
+            return cell;
+        }
+
+        function createEmptyNameCell() {
+            const cell = document.createElement('td');
+            cell.className = 'name-cell';
+            return cell;
+        }
+
+        function createEmptyCell() {
+            const cell = document.createElement('td');
+            return cell;
+        }
+
+        function addVolunteer() {
+            const input = document.getElementById('newVolunteerName');
+            const name = input.value.trim();
+            
+            if (name && !volunteers.includes(name)) {
+                volunteers.push(name);
+                volunteers.sort();
+                renderVolunteers();
+                input.value = '';
+            } else if (volunteers.includes(name)) {
+                alert('Volunteer already exists!');
+            }
+        }
+
+        function removeVolunteer(volunteerName) {
+            if (confirm(`Remove ${volunteerName} from the list?`)) {
+                volunteers = volunteers.filter(v => v !== volunteerName);
+                renderVolunteers();
+            }
+        }
+
+        function resetToOriginal() {
+            if (confirm('Reset to the original volunteer list? This will remove any volunteers you added.')) {
+                volunteers = [...initialVolunteers];
+                renderVolunteers();
+            }
+        }
+
+        function exportToPDF() {
+            const element = document.body;
+            const opt = {
+                margin: [0.2, 0.2, 0.2, 0.2],
+                filename: 'NHFD_Training_Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                },
+                jsPDF: { 
+                    unit: 'in', 
+                    format: 'letter', 
+                    orientation: 'portrait',
+                    compress: true
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            // Temporarily hide management controls for PDF export
+            const controls = document.querySelectorAll('.volunteer-management, .management-controls, .pdf-export, .delete-btn');
+            controls.forEach(control => {
+                control.style.display = 'none';
+            });
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Restore controls after export
+                controls.forEach(control => {
+                    control.style.display = '';
+                });
+            });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeTable);
+    </script>
+</body>
+</html>

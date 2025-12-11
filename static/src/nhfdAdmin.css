@@ -1,0 +1,152 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 15px;
+  font-size: 11px;
+}
+
+.paper-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 15px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: center;
+}
+
+.title-with-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-image {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.form-section {
+  margin-top: 10px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.form-field {
+  flex: 1;
+}
+
+label {
+  display: block;
+  font-size: 10px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+input[type="text"], input[type="date"] {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #000;
+  font-size: 11px;
+  box-sizing: border-box;
+}
+
+.pdf-export {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.export-btn, .clear-btn, .save-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.clear-btn { background-color: #ff4444; }
+.clear-btn:hover { background-color: #cc0000; }
+
+.export-btn:hover,
+.save-btn:hover {
+  background-color: #45a049;
+}
+
+.footer {
+  margin-top: 12px;
+  font-size: 10px;
+  text-align: right;
+}
+
+#ppeTable td {
+  padding: 4px;
+  font-size: 10px;
+}
+
+.delete-btn {
+  color: red;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-size: 14px;
+}
+
+.delete-btn:hover {
+  color: darkred;
+}
+
+#ppeTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+  margin-top: 10px;
+}
+
+#ppeTable th {
+  background-color: #f0f0f0;
+  border: 1px solid #000;
+  padding: 4px;
+  text-align: center;
+}
+
+#ppeTable td {
+  border: 1px solid #000;
+  padding: 4px 6px;
+  vertical-align: middle;
+}
+
+#ppeTable td:nth-child(2) {
+  text-align: left;
+}
+
+.management-controls {
+  text-align: center;
+  margin: 10px 0;
+}
+
+@media print {
+  .pdf-export {
+    display: none !important;
+  }
+}
