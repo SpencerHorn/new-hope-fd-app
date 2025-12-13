@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+
 	export let data;
 	let user = structuredClone(data.user);
 
@@ -13,6 +15,20 @@
 			alert('Saved!');
 		} else {
 			alert('Error saving user');
+		}
+	}
+
+	async function deleteUser() {
+		if (!confirm('Delete this user? This cannot be undone.')) return;
+
+		const res = await fetch(`/api/users/${data.user.id}`, {
+			method: 'DELETE'
+		});
+
+		if (res.ok) {
+			goto('/');
+		} else {
+			alert('Failed to delete user');
 		}
 	}
 </script>
@@ -66,6 +82,10 @@
 		<button class="save-btn" on:click={save}>
 			Save Changes
 		</button>
+
+		<button class="delete-user" on:click={deleteUser}>
+			Delete User
+		</button>
 	</div>
 
 	<hr />
@@ -117,5 +137,16 @@
 
 	.save-btn:hover {
 		background: #004a9e;
+	}
+
+	.delete-user {
+		margin-top: 20px;
+		padding: 10px 14px;
+		border-radius: 10px;
+		background: #fee2e2;
+		color: #991b1b;
+		border: 1px solid #fca5a5;
+		font-weight: 600;
+		cursor: pointer;
 	}
 </style>
