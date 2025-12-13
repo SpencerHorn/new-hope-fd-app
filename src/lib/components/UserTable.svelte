@@ -1,13 +1,30 @@
 <script lang="ts">
 	export let users: any[] = [];
 
+	// Form state
 	let firstName = '';
 	let lastName = '';
 	let phone = '';
 	let personalEmail = '';
 	let roleFilter = 'all';
-
 	let showMore = false;
+
+	// Table controls
+	let sortDir: 'asc' | 'desc' = 'asc';
+	let tableRoleFilter = 'all';
+
+	// Derived table data
+	$: filteredUsers = users
+		.filter((u) =>
+			tableRoleFilter === 'all' ? true : u.role === tableRoleFilter
+		)
+		.sort((a, b) => {
+			const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
+			const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
+			return sortDir === 'asc'
+				? nameA.localeCompare(nameB)
+				: nameB.localeCompare(nameA);
+		});
 
 	async function updateRole(id: number, role: string) {
 		await fetch(`/api/users/${id}/role`, {
@@ -19,15 +36,12 @@
 
 	async function deleteUser(id: number) {
 		if (!confirm('Delete this user?')) return;
-
-		await fetch(`/api/users/${id}`, {
-			method: 'DELETE'
-		});
-
+		await fetch(`/api/users/${id}`, { method: 'DELETE' });
 		location.reload();
 	}
 </script>
 
+<!-- ================= FORM ================= -->
 <section class="card">
 	<h1>User Management</h1>
 
@@ -36,7 +50,11 @@
 			<input name="firstName" placeholder="First name" bind:value={firstName} />
 			<input name="lastName" placeholder="Last name" bind:value={lastName} />
 			<input name="phone" placeholder="Phone" bind:value={phone} />
-			<input name="personalEmail" placeholder="Personal email" bind:value={personalEmail} />
+			<input
+				name="personalEmail"
+				placeholder="Personal email"
+				bind:value={personalEmail}
+			/>
 
 			<select name="role">
 				<option value="probationary">Probationary</option>
@@ -51,14 +69,37 @@
 			<button class="primary" type="submit">Add User</button>
 		</div>
 
-		<button type="button" class="link" on:click={() => (showMore = !showMore)}>
+		<button
+			type="button"
+			class="link"
+			on:click={() => (showMore = !showMore)}
+		>
 			{showMore ? 'Less fields' : 'More fields'}
 		</button>
 	</form>
 </section>
 
+<!-- ================= TABLE ================= -->
 <section class="card">
-	<h2>Users</h2>
+	<div class="table-header">
+		<h2>Users</h2>
+
+		<div class="table-controls">
+			<select bind:value={tableRoleFilter}>
+				<option value="all">All roles</option>
+				<option value="probationary">Probationary</option>
+				<option value="volunteer">Volunteer</option>
+				<option value="employee">Employee</option>
+			</select>
+
+			<button
+				class="sort-btn"
+				on:click={() => (sortDir = sortDir === 'asc' ? 'desc' : 'asc')}
+			>
+				Sort {sortDir === 'asc' ? '▲' : '▼'}
+			</button>
+		</div>
+	</div>
 
 	<table>
 		<thead>
@@ -71,12 +112,12 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#if users.length === 0}
+			{#if filteredUsers.length === 0}
 				<tr>
 					<td colspan="5">No users found</td>
 				</tr>
 			{:else}
-				{#each users as u}
+				{#each filteredUsers as u}
 					<tr>
 						<td>
 							<a href={`/users/${u.id}`}>
@@ -99,7 +140,9 @@
 							</select>
 						</td>
 						<td>
-							<button class="delete" on:click={() => deleteUser(u.id)}>✕</button>
+							<button class="delete" on:click={() => deleteUser(u.id)}>
+								✕
+							</button>
 						</td>
 					</tr>
 				{/each}
@@ -109,12 +152,13 @@
 </section>
 
 <style>
+	/* ---------- Layout ---------- */
 	.card {
 		background: white;
-		border-radius: 16px;
+		border-radius: 18px;
 		padding: 24px;
-		margin-bottom: 24px;
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+		margin-bottom: 28px;
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
 		max-width: 100%;
 		overflow-x: hidden;
 	}
@@ -124,6 +168,7 @@
 		margin-bottom: 16px;
 	}
 
+	/* ---------- Form ---------- */
 	.user-form {
 		display: flex;
 		flex-direction: column;
@@ -144,11 +189,13 @@
 		border: 1px solid #d1d5db;
 		font-size: 15px;
 		width: 100%;
+		box-sizing: border-box;
 	}
 
 	.actions-row {
 		display: flex;
 		gap: 12px;
+		flex-wrap: wrap;
 	}
 
 	button.primary {
@@ -178,6 +225,21 @@
 		align-self: flex-start;
 	}
 
+	/* ---------- Table ---------- */
+	.table-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 12px;
+		gap: 12px;
+		flex-wrap: wrap;
+	}
+
+	.table-controls {
+		display: flex;
+		gap: 10px;
+	}
+
 	table {
 		width: 100%;
 		border-collapse: collapse;
@@ -188,6 +250,7 @@
 		padding: 14px 10px;
 		border-bottom: 1px solid #e5e7eb;
 		text-align: left;
+		white-space: nowrap;
 	}
 
 	.role-pill {
@@ -196,6 +259,14 @@
 		padding: 6px 12px;
 		font-weight: 600;
 		border: none;
+	}
+
+	.sort-btn {
+		background: #f3f4f6;
+		border: 1px solid #d1d5db;
+		border-radius: 10px;
+		padding: 8px 12px;
+		cursor: pointer;
 	}
 
 	.delete {
