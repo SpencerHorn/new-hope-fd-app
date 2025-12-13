@@ -1,20 +1,25 @@
+import type { PageServerLoad } from './$types';
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 
-export async function load({ params }) {
-	const db = getDB(); // ← IMPORTANT: get DB instance safely
+export const load: PageServerLoad = async ({ params }) => {
+	const db = await getDB();
 
-	const id = Number(params.id);
-
-	const user = db.select().from(users).where(eq(users.id, id)).get();
+	const user = await db
+		.select()
+		.from(users)
+		.where(eq(users.id, Number(params.id)))
+		.get();
 
 	if (!user) {
 		return {
-			status: 404,
-			error: new Error('User not found')
+			user: null,
+			error: 'User not found'
 		};
 	}
 
-	return { user };
-}
+	return {
+		user
+	};
+};
