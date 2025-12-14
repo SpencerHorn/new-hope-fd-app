@@ -1,243 +1,199 @@
 <script lang="ts">
-	export let users: any[] = [];
+	import { goto } from '$app/navigation';
+	import { invalidate } from '$app/navigation';
 
-	// Form state
-	let firstName = '';
-	let lastName = '';
-	let phone = '';
-	let personalEmail = '';
-	let roleFilter = 'all';
+	export let users: any[] = [];
+	export let filters: any = {};
+
 	let showMore = false;
 
-	// Table controls
-	let sortDir: 'asc' | 'desc' = 'asc';
-	let tableRoleFilter = 'all';
+	let firstName = filters.firstName ?? '';
+	let lastName = filters.lastName ?? '';
+	let phone = filters.phone ?? '';
+	let personalEmail = filters.personalEmail ?? '';
+	let role = filters.role ?? '';
 
-	// Derived table data
-	$: filteredUsers = users
-		.filter((u) =>
-			tableRoleFilter === 'all' ? true : u.role === tableRoleFilter
-		)
-		.sort((a, b) => {
-			const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
-			const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
-			return sortDir === 'asc'
-				? nameA.localeCompare(nameB)
-				: nameB.localeCompare(nameA);
+	// expanded fields
+	let address = '';
+	let workEmail = '';
+	let maskSize = '';
+	let fitTestDate = '';
+	let tshirtSize = '';
+
+	/* SEARCH */
+	function submitSearch() {
+		const params = new URLSearchParams({
+			firstName,
+			lastName,
+			phone,
+			personalEmail,
+			role
 		});
 
-	async function updateRole(id: number, role: string) {
-		await fetch(`/api/users/${id}/role`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ role })
-		});
+		goto(`/users?${params.toString()}`);
 	}
 
-	async function deleteUser(id: number) {
-		if (!confirm('Delete this user?')) return;
-		await fetch(`/api/users/${id}`, { method: 'DELETE' });
-		location.reload();
+	/* ADD USER (INLINE — no routing) */
+	async function addUser() {
+		const res = await fetch('/api/users', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				firstName,
+				lastName,
+				phone,
+				personalEmail,
+				address,
+				workEmail,
+				maskSize,
+				fitTestDate,
+				tshirtSize,
+				role: role || 'probationary'
+			})
+		});
+
+		if (!res.ok) {
+			alert('Failed to add user');
+			return;
+		}
+
+		// Clear form
+		firstName = '';
+		lastName = '';
+		phone = '';
+		personalEmail = '';
+		address = '';
+		workEmail = '';
+		maskSize = '';
+		fitTestDate = '';
+		tshirtSize = '';
+		role = '';
+
+		// Refresh data
+		await invalidate();
 	}
 </script>
 
-<!-- ================= FORM ================= -->
-<section class="card">
+<section class="user-management">
 	<h1>User Management</h1>
 
-	<form method="POST" action="?/create" class="user-form">
+	<form class="user-form" on:submit|preventDefault={submitSearch}>
 		<div class="form-grid">
-			<input name="firstName" placeholder="First name" bind:value={firstName} />
-			<input name="lastName" placeholder="Last name" bind:value={lastName} />
-			<input name="phone" placeholder="Phone" bind:value={phone} />
-			<input
-				name="personalEmail"
-				placeholder="Personal email"
-				bind:value={personalEmail}
-			/>
+			<input placeholder="First name" bind:value={firstName} />
+			<input placeholder="Last name" bind:value={lastName} />
+			<input placeholder="Phone" bind:value={phone} />
+			<input placeholder="Personal email" bind:value={personalEmail} />
 
-			<select name="role">
+			<select bind:value={role}>
+				<option value="">All roles</option>
 				<option value="probationary">Probationary</option>
 				<option value="volunteer">Volunteer</option>
 				<option value="employee">Employee</option>
 			</select>
-
-			<button class="secondary" type="submit">Search</button>
 		</div>
 
-		<div class="actions-row">
-			<button class="primary" type="submit">Add User</button>
-		</div>
-
-		<button
-			type="button"
-			class="link"
-			on:click={() => (showMore = !showMore)}
-		>
+		<button type="button" class="link" on:click={() => (showMore = !showMore)}>
 			{showMore ? 'Less fields' : 'More fields'}
 		</button>
-	</form>
-</section>
 
-<!-- ================= TABLE ================= -->
-<section class="card">
-	<div class="table-header">
-		<h2>Users</h2>
+		{#if showMore}
+			<div class="form-grid expanded">
+				<input placeholder="Address" bind:value={address} />
+				<input placeholder="Work email" bind:value={workEmail} />
+				<input placeholder="Mask size" bind:value={maskSize} />
+				<input placeholder="Fit test date" bind:value={fitTestDate} />
+				<input placeholder="T-shirt size" bind:value={tshirtSize} />
+			</div>
+		{/if}
 
-		<div class="table-controls">
-			<select bind:value={tableRoleFilter}>
-				<option value="all">All roles</option>
-				<option value="probationary">Probationary</option>
-				<option value="volunteer">Volunteer</option>
-				<option value="employee">Employee</option>
-			</select>
-
-			<button
-				class="sort-btn"
-				on:click={() => (sortDir = sortDir === 'asc' ? 'desc' : 'asc')}
-			>
-				Sort {sortDir === 'asc' ? '▲' : '▼'}
-			</button>
+		<div class="actions">
+			<button type="submit">Search</button>
+			<button type="button" on:click={addUser}>Add User</button>
 		</div>
-	</div>
+	</form>
 
-	<table>
+	<table class="user-table">
 		<thead>
 			<tr>
 				<th>Name</th>
 				<th>Phone</th>
 				<th>Email</th>
 				<th>Role</th>
-				<th></th>
+				<th>Actions</th>
 			</tr>
 		</thead>
+
 		<tbody>
-			{#if filteredUsers.length === 0}
+			{#each users as u}
 				<tr>
-					<td colspan="5">No users found</td>
+					<td>
+						<a href={`/users/${u.id}`}>
+							{u.lastName}, {u.firstName}
+						</a>
+					</td>
+					<td>{u.phone}</td>
+					<td>{u.personalEmail}</td>
+					<td>{u.role}</td>
+					<td>
+						<button on:click={() => goto(`/users/${u.id}`)}>View</button>
+					</td>
 				</tr>
-			{:else}
-				{#each filteredUsers as u}
-					<tr>
-						<td>
-							<a href={`/users/${u.id}`}>
-								{u.lastName}, {u.firstName}
-							</a>
-						</td>
-						<td>{u.phone}</td>
-						<td>{u.personalEmail}</td>
-						<td>
-							<select
-								class="role-pill"
-								value={u.role}
-								on:change={(e) =>
-									updateRole(u.id, (e.target as HTMLSelectElement).value)
-								}
-							>
-								<option value="probationary">Probationary</option>
-								<option value="volunteer">Volunteer</option>
-								<option value="employee">Employee</option>
-							</select>
-						</td>
-						<td>
-							<button class="delete" on:click={() => deleteUser(u.id)}>
-								✕
-							</button>
-						</td>
-					</tr>
-				{/each}
-			{/if}
+			{/each}
 		</tbody>
 	</table>
 </section>
 
 <style>
-	/* ---------- Layout ---------- */
-	.card {
-		background: white;
-		border-radius: 18px;
-		padding: 24px;
-		margin-bottom: 28px;
-		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-		max-width: 100%;
-		overflow-x: hidden;
+	.user-management {
+		max-width: 1100px;
 	}
 
-	h1,
-	h2 {
-		margin-bottom: 16px;
-	}
-
-	/* ---------- Form ---------- */
 	.user-form {
-		display: flex;
-		flex-direction: column;
-		gap: 16px;
+		margin-bottom: 24px;
 	}
 
 	.form-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-		gap: 14px;
-		width: 100%;
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		gap: 12px;
+	}
+
+	.form-grid.expanded {
+		margin-top: 12px;
 	}
 
 	input,
 	select {
-		padding: 12px 14px;
-		border-radius: 12px;
-		border: 1px solid #d1d5db;
-		font-size: 15px;
-		width: 100%;
-		box-sizing: border-box;
+		padding: 8px;
+		border-radius: 6px;
+		border: 1px solid #d0d0d0;
+		font-size: 14px;
 	}
 
-	.actions-row {
+	.actions {
 		display: flex;
-		gap: 12px;
-		flex-wrap: wrap;
+		gap: 10px;
+		margin-top: 12px;
 	}
 
-	button.primary {
-		background: #111827;
-		color: white;
-		border: none;
-		border-radius: 14px;
-		padding: 12px 20px;
-		font-size: 15px;
+	button {
+		padding: 8px 12px;
+		border-radius: 6px;
+		border: 1px solid #d0d0d0;
+		background: #fafafa;
 		cursor: pointer;
 	}
 
-	button.secondary {
-		background: #f3f4f6;
-		border-radius: 14px;
-		border: 1px solid #d1d5db;
-		padding: 12px;
-		cursor: pointer;
+	button:hover {
+		background: #f0f0f0;
 	}
 
-	button.link {
+	.link {
 		background: none;
 		border: none;
 		color: #2563eb;
-		font-size: 14px;
 		cursor: pointer;
-		align-self: flex-start;
-	}
-
-	/* ---------- Table ---------- */
-	.table-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 12px;
-		gap: 12px;
-		flex-wrap: wrap;
-	}
-
-	.table-controls {
-		display: flex;
-		gap: 10px;
+		padding: 6px 0;
 	}
 
 	table {
@@ -247,33 +203,8 @@
 
 	th,
 	td {
-		padding: 14px 10px;
+		padding: 10px;
 		border-bottom: 1px solid #e5e7eb;
 		text-align: left;
-		white-space: nowrap;
-	}
-
-	.role-pill {
-		background: #fde68a;
-		border-radius: 999px;
-		padding: 6px 12px;
-		font-weight: 600;
-		border: none;
-	}
-
-	.sort-btn {
-		background: #f3f4f6;
-		border: 1px solid #d1d5db;
-		border-radius: 10px;
-		padding: 8px 12px;
-		cursor: pointer;
-	}
-
-	.delete {
-		background: none;
-		border: none;
-		color: red;
-		font-size: 18px;
-		cursor: pointer;
 	}
 </style>
