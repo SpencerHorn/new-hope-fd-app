@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+
 	export let users: any[] = [];
 
 	// Form state
@@ -8,22 +10,99 @@
 	let personalEmail = '';
 	let roleFilter = 'all';
 	let showMore = false;
+	let address = '';
+	let workEmail = '';
+	let maskSize = '';
+	let fitTestDate = '';
+	let tshirtSize = '';
+
+	// Validation error
+	let formError = '';
 
 	// Table controls
 	let sortDir: 'asc' | 'desc' = 'asc';
 	let tableRoleFilter = 'all';
 
-	// Derived table data
+	/* -------------------------
+	   Search handler
+	------------------------- */
+	function handleSearch() {
+		const params = new URLSearchParams();
+
+		if (firstName) params.set('firstName', firstName);
+		if (lastName) params.set('lastName', lastName);
+		if (phone) params.set('phone', phone);
+		if (personalEmail) params.set('personalEmail', personalEmail);
+		if (roleFilter !== 'all') params.set('role', roleFilter);
+
+		goto(`/users?${params.toString()}`);
+	}
+
+	/* -------------------------
+	   Helpers
+	------------------------- */
+	function formatPhone(raw: string): string | null {
+		const digits = raw.replace(/\D/g, '');
+		if (digits.length !== 10) return null;
+		return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+	}
+
+	function emailExists(email: string): boolean {
+		return users.some((u) => u.personalEmail?.toLowerCase() === email.toLowerCase());
+	}
+
+	function phoneExists(formattedPhone: string): boolean {
+		return users.some((u) => u.phone === formattedPhone);
+	}
+
+	function handleAddSubmit(e: SubmitEvent) {
+		formError = '';
+
+		const formatted = formatPhone(phone);
+		if (!formatted) {
+			formError = 'Phone number must contain exactly 10 digits.';
+			e.preventDefault();
+			return;
+		}
+
+		if (phoneExists(formatted)) {
+			formError = 'A user with this phone number already exists.';
+			e.preventDefault();
+			return;
+		}
+
+		if (emailExists(personalEmail)) {
+			formError = 'A user with this email address already exists.';
+			e.preventDefault();
+			return;
+		}
+
+		phone = formatted;
+	}
+
+	/* -------------------------
+	   ✅ FIXED: Derived table data
+	   (client-side search + filters)
+	------------------------- */
 	$: filteredUsers = users
-		.filter((u) =>
-			tableRoleFilter === 'all' ? true : u.role === tableRoleFilter
-		)
+		.filter((u) => {
+			if (tableRoleFilter !== 'all' && u.role !== tableRoleFilter) return false;
+
+			if (firstName && !u.firstName?.toLowerCase().includes(firstName.toLowerCase())) return false;
+
+			if (lastName && !u.lastName?.toLowerCase().includes(lastName.toLowerCase())) return false;
+
+			if (personalEmail && !u.personalEmail?.toLowerCase().includes(personalEmail.toLowerCase()))
+				return false;
+
+			if (phone && !u.phone?.includes(phone)) return false;
+
+			return true;
+		})
 		.sort((a, b) => {
 			const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
 			const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
-			return sortDir === 'asc'
-				? nameA.localeCompare(nameB)
-				: nameB.localeCompare(nameA);
+			return sortDir === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
 		});
 
 	async function updateRole(id: number, role: string) {
@@ -45,35 +124,40 @@
 <section class="card">
 	<h1>User Management</h1>
 
-	<form method="POST" action="?/create" class="user-form">
+	<form method="POST" action="?/create" class="user-form" on:submit={handleAddSubmit}>
 		<div class="form-grid">
-			<input name="firstName" placeholder="First name" bind:value={firstName} />
-			<input name="lastName" placeholder="Last name" bind:value={lastName} />
-			<input name="phone" placeholder="Phone" bind:value={phone} />
-			<input
-				name="personalEmail"
-				placeholder="Personal email"
-				bind:value={personalEmail}
-			/>
+			<input placeholder="First name" bind:value={firstName} />
+			<input placeholder="Last name" bind:value={lastName} />
+			<input placeholder="Phone" bind:value={phone} />
+			<input placeholder="Personal email" bind:value={personalEmail} />
 
-			<select name="role">
+			<select bind:value={roleFilter}>
+				<option value="all">All roles</option>
 				<option value="probationary">Probationary</option>
 				<option value="volunteer">Volunteer</option>
 				<option value="employee">Employee</option>
 			</select>
-
-			<button class="secondary" type="submit">Search</button>
 		</div>
+
+		{#if showMore}
+			<div class="form-grid">
+				<input placeholder="Address" bind:value={address} />
+				<input placeholder="Work email" bind:value={workEmail} />
+				<input placeholder="Mask size" bind:value={maskSize} />
+				<input type="date" bind:value={fitTestDate} />
+				<input placeholder="T-shirt size" bind:value={tshirtSize} />
+			</div>
+		{/if}
+
+		{#if formError}
+			<p style="color:#dc2626">{formError}</p>
+		{/if}
 
 		<div class="actions-row">
-			<button class="primary" type="submit">Add User</button>
+			<button class="primary" type="submit"> Add User </button>
 		</div>
 
-		<button
-			type="button"
-			class="link"
-			on:click={() => (showMore = !showMore)}
-		>
+		<button type="button" class="link" on:click={() => (showMore = !showMore)}>
 			{showMore ? 'Less fields' : 'More fields'}
 		</button>
 	</form>
@@ -92,10 +176,7 @@
 				<option value="employee">Employee</option>
 			</select>
 
-			<button
-				class="sort-btn"
-				on:click={() => (sortDir = sortDir === 'asc' ? 'desc' : 'asc')}
-			>
+			<button class="sort-btn" on:click={() => (sortDir = sortDir === 'asc' ? 'desc' : 'asc')}>
 				Sort {sortDir === 'asc' ? '▲' : '▼'}
 			</button>
 		</div>
@@ -113,26 +194,18 @@
 		</thead>
 		<tbody>
 			{#if filteredUsers.length === 0}
-				<tr>
-					<td colspan="5">No users found</td>
-				</tr>
+				<tr><td colspan="5">No users found</td></tr>
 			{:else}
 				{#each filteredUsers as u}
 					<tr>
-						<td>
-							<a href={`/users/${u.id}`}>
-								{u.lastName}, {u.firstName}
-							</a>
-						</td>
+						<td><a href={`/users/${u.id}`}>{u.lastName}, {u.firstName}</a></td>
 						<td>{u.phone}</td>
 						<td>{u.personalEmail}</td>
 						<td>
 							<select
 								class="role-pill"
 								value={u.role}
-								on:change={(e) =>
-									updateRole(u.id, (e.target as HTMLSelectElement).value)
-								}
+								on:change={(e) => updateRole(u.id, (e.target as HTMLSelectElement).value)}
 							>
 								<option value="probationary">Probationary</option>
 								<option value="volunteer">Volunteer</option>
@@ -140,9 +213,7 @@
 							</select>
 						</td>
 						<td>
-							<button class="delete" on:click={() => deleteUser(u.id)}>
-								✕
-							</button>
+							<button class="delete" on:click={() => deleteUser(u.id)}>✕</button>
 						</td>
 					</tr>
 				{/each}
