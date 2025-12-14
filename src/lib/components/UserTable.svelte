@@ -24,23 +24,15 @@
 	let tableRoleFilter = 'all';
 
 	/* -------------------------
-	   Search handler
-	------------------------- */
-	function handleSearch() {
-		const params = new URLSearchParams();
-
-		if (firstName) params.set('firstName', firstName);
-		if (lastName) params.set('lastName', lastName);
-		if (phone) params.set('phone', phone);
-		if (personalEmail) params.set('personalEmail', personalEmail);
-		if (roleFilter !== 'all') params.set('role', roleFilter);
-
-		goto(`/users?${params.toString()}`);
-	}
-
-	/* -------------------------
 	   Helpers
 	------------------------- */
+	function normalizeName(value: string): string {
+		return value
+			.trim()
+			.toLowerCase()
+			.replace(/\b\w/g, (c) => c.toUpperCase());
+	}
+
 	function formatPhone(raw: string): string | null {
 		const digits = raw.replace(/\D/g, '');
 		if (digits.length !== 10) return null;
@@ -55,6 +47,9 @@
 		return users.some((u) => u.phone === formattedPhone);
 	}
 
+	/* -------------------------
+	   Add user submit
+	------------------------- */
 	function handleAddSubmit(e: SubmitEvent) {
 		formError = '';
 
@@ -77,32 +72,38 @@
 			return;
 		}
 
+		// ✅ Normalize before save
+		firstName = normalizeName(firstName);
+		lastName = normalizeName(lastName);
 		phone = formatted;
 	}
 
 	/* -------------------------
-	   ✅ FIXED: Derived table data
-	   (client-side search + filters)
+	   ✅ RESTORED: Client-side search
 	------------------------- */
 	$: filteredUsers = users
 		.filter((u) => {
 			if (tableRoleFilter !== 'all' && u.role !== tableRoleFilter) return false;
 
-			if (firstName && !u.firstName?.toLowerCase().includes(firstName.toLowerCase())) return false;
+			if (firstName && !u.firstName?.toLowerCase().includes(firstName.toLowerCase()))
+				return false;
 
-			if (lastName && !u.lastName?.toLowerCase().includes(lastName.toLowerCase())) return false;
+			if (lastName && !u.lastName?.toLowerCase().includes(lastName.toLowerCase()))
+				return false;
 
 			if (personalEmail && !u.personalEmail?.toLowerCase().includes(personalEmail.toLowerCase()))
 				return false;
 
-			if (phone && !u.phone?.includes(phone)) return false;
+			if (phone && !u.phone?.includes(phone.replace(/\D/g, ''))) return false;
 
 			return true;
 		})
 		.sort((a, b) => {
 			const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
 			const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
-			return sortDir === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+			return sortDir === 'asc'
+				? nameA.localeCompare(nameB)
+				: nameB.localeCompare(nameA);
 		});
 
 	async function updateRole(id: number, role: string) {
@@ -126,13 +127,12 @@
 
 	<form method="POST" action="?/create" class="user-form" on:submit={handleAddSubmit}>
 		<div class="form-grid">
-			<input placeholder="First name" bind:value={firstName} />
-			<input placeholder="Last name" bind:value={lastName} />
-			<input placeholder="Phone" bind:value={phone} />
-			<input placeholder="Personal email" bind:value={personalEmail} />
+			<input name="firstName" placeholder="First name" bind:value={firstName} />
+			<input name="lastName" placeholder="Last name" bind:value={lastName} />
+			<input name="phone" placeholder="Phone" bind:value={phone} />
+			<input name="personalEmail" placeholder="Personal email" bind:value={personalEmail} />
 
-			<select bind:value={roleFilter}>
-				<option value="all">All roles</option>
+			<select name="role">
 				<option value="probationary">Probationary</option>
 				<option value="volunteer">Volunteer</option>
 				<option value="employee">Employee</option>
@@ -141,11 +141,11 @@
 
 		{#if showMore}
 			<div class="form-grid">
-				<input placeholder="Address" bind:value={address} />
-				<input placeholder="Work email" bind:value={workEmail} />
-				<input placeholder="Mask size" bind:value={maskSize} />
-				<input type="date" bind:value={fitTestDate} />
-				<input placeholder="T-shirt size" bind:value={tshirtSize} />
+				<input name="address" placeholder="Address" bind:value={address} />
+				<input name="workEmail" placeholder="Work email" bind:value={workEmail} />
+				<input name="maskSize" placeholder="Mask size" bind:value={maskSize} />
+				<input name="fitTestDate" type="date" bind:value={fitTestDate} />
+				<input name="tshirtSize" placeholder="T-shirt size" bind:value={tshirtSize} />
 			</div>
 		{/if}
 
@@ -154,7 +154,7 @@
 		{/if}
 
 		<div class="actions-row">
-			<button class="primary" type="submit"> Add User </button>
+			<button class="primary" type="submit">Add User</button>
 		</div>
 
 		<button type="button" class="link" on:click={() => (showMore = !showMore)}>
@@ -205,7 +205,9 @@
 							<select
 								class="role-pill"
 								value={u.role}
-								on:change={(e) => updateRole(u.id, (e.target as HTMLSelectElement).value)}
+								on:change={(e) =>
+									updateRole(u.id, (e.target as HTMLSelectElement).value)
+								}
 							>
 								<option value="probationary">Probationary</option>
 								<option value="volunteer">Volunteer</option>
