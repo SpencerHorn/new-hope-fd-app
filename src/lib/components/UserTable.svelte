@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import RosterModal from '$lib/components/RosterModal.svelte';
 
 	export let users: any[] = [];
+
+	let showRosterModal = false;
 
 	// Form state
 	let firstName = '';
@@ -167,6 +170,13 @@
 <section class="card">
 	<div class="table-header">
 		<h2>Users</h2>
+		<button
+			class="print-roster"
+			on:click={() => (showRosterModal = true)}
+		>
+			Print Roster
+		</button>
+
 
 		<div class="table-controls">
 			<select bind:value={tableRoleFilter}>
@@ -349,4 +359,29 @@
 		font-size: 18px;
 		cursor: pointer;
 	}
+
+	.table-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 12px;
+}
+
+.print-roster {
+	background: none;
+	border: none;
+	color: #2563eb;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 0;
+}
+
+.print-roster:hover {
+	text-decoration: underline;
+}
+
 </style>
+
+{#if showRosterModal}
+	<RosterModal on:close={() => (showRosterModal = false)} />
+{/if}
