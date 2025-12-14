@@ -154,7 +154,6 @@
 		{/if}
 
 		<div class="actions-row">
-			<button type="button" class="secondary" on:click={handleSearch}> Search </button>
 			<button class="primary" type="submit"> Add User </button>
 		</div>
 
