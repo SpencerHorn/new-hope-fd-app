@@ -4,9 +4,14 @@
 </script>
 
 <div class="app-shell">
-	<Sidebar />
+	{#if data.user}
+		<Sidebar />
+	{/if}
 
-	<main class="app-main">
+	<main
+		class="app-main"
+		class:with-sidebar={!!data.user}
+	>
 		<slot />
 	</main>
 </div>
@@ -18,11 +23,14 @@
 		background: #f5f5f7;
 	}
 
-	/* 👇 This offsets content so sidebar NEVER overlaps */
 	.app-main {
-		margin-left: 220px; /* MUST match sidebar width */
 		flex: 1;
 		padding: 32px;
 		box-sizing: border-box;
+	}
+
+	/* 👇 ONLY offset content when sidebar exists */
+	.app-main.with-sidebar {
+		margin-left: 220px; /* MUST match sidebar width */
 	}
 </style>
