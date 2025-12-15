@@ -7,7 +7,7 @@ import {
 	userChecklistItems,
 	users
 } from '$lib/db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import crypto from 'crypto';
 
 export const POST = async ({ request }) => {
@@ -76,41 +76,47 @@ export const POST = async ({ request }) => {
 		return json({ error: 'No users matched assignment criteria' }, { status: 400 });
 	}
 
-	// Assign checklist to each user
-	for (const user of targetUsers) {
-		// Prevent duplicate assignment
-		const existing = db
-			.select()
-			.from(userChecklists)
-			.where(eq(userChecklists.userId, user.id))
-			.where(eq(userChecklists.checklistId, checklistId))
-			.get();
+	// 🔒 TRANSACTION: all-or-nothing assignment
+	db.transaction(() => {
+		for (const user of targetUsers) {
+			// Prevent duplicate assignment
+			const existing = db
+				.select()
+				.from(userChecklists)
+				.where(
+					and(
+						eq(userChecklists.userId, user.id),
+						eq(userChecklists.checklistId, checklistId)
+					)
+				)
+				.get();
 
-		if (existing) continue;
+			if (existing) continue;
 
-		const userChecklistId = crypto.randomUUID();
+			const userChecklistId = crypto.randomUUID();
 
-		db.insert(userChecklists)
-			.values({
-				id: userChecklistId,
-				checklistId,
-				userId: user.id,
-				userPhone: user.phone
-			})
-			.run();
+			db.insert(userChecklists)
+				.values({
+					id: userChecklistId,
+					checklistId,
+					userId: user.id,
+					userPhone: user.phone
+				})
+				.run();
 
-		db.insert(userChecklistItems)
-			.values(
-				items.map((item) => ({
-					id: crypto.randomUUID(),
-					userChecklistId,
-					checklistItemId: item.id,
-					completed: 0,
-					dateCompleted: null
-				}))
-			)
-			.run();
-	}
+			db.insert(userChecklistItems)
+				.values(
+					items.map((item) => ({
+						id: crypto.randomUUID(),
+						userChecklistId,
+						checklistItemId: item.id,
+						completed: 0,
+						dateCompleted: null
+					}))
+				)
+				.run();
+		}
+	});
 
 	return json({ success: true });
 };

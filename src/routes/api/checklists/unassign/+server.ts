@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { getDB } from '$lib/db/client';
 import { userChecklists, users } from '$lib/db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, and } from 'drizzle-orm';
 
 export const POST = async ({ request }) => {
 	const db = getDB();
@@ -45,11 +45,17 @@ export const POST = async ({ request }) => {
 		return json({ error: 'No users matched' }, { status: 400 });
 	}
 
-	// Delete assignments (items cascade automatically)
-	db.delete(userChecklists)
-		.where(eq(userChecklists.checklistId, checklistId))
-		.where(inArray(userChecklists.userId, targetUserIds))
-		.run();
+	// 🔒 TRANSACTION + SAFE CONDITION COMBINATION
+	db.transaction(() => {
+		db.delete(userChecklists)
+			.where(
+				and(
+					eq(userChecklists.checklistId, checklistId),
+					inArray(userChecklists.userId, targetUserIds)
+				)
+			)
+			.run();
+	});
 
 	return json({ success: true });
 };
