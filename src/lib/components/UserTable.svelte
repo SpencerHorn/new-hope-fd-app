@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import RosterModal from '$lib/components/RosterModal.svelte';
+	import UserChecklistModal from '$lib/components/UserChecklistModal.svelte';
 
 	export let users: any[] = [];
 
 	let showRosterModal = false;
+	let showChecklistModal = false;
+	let selectedUser: any = null;
+	let userChecklists: any[] = [];
 
 	// Form state
 	let firstName = '';
@@ -122,6 +126,14 @@
 		await fetch(`/api/users/${id}`, { method: 'DELETE' });
 		location.reload();
 	}
+
+	async function openChecklistModal(user: any) {
+		selectedUser = user;
+		showChecklistModal = true;
+
+		const res = await fetch(`/api/users/${user.id}/checklists`);
+		userChecklists = await res.json();
+	}
 </script>
 
 <!-- ================= FORM ================= -->
@@ -170,26 +182,10 @@
 <section class="card">
 	<div class="table-header">
 		<h2>Users</h2>
-		<button
-			class="print-roster"
-			on:click={() => (showRosterModal = true)}
-		>
+
+		<button class="print-roster" on:click={() => (showRosterModal = true)}>
 			Print Roster
 		</button>
-
-
-		<div class="table-controls">
-			<select bind:value={tableRoleFilter}>
-				<option value="all">All roles</option>
-				<option value="probationary">Probationary</option>
-				<option value="volunteer">Volunteer</option>
-				<option value="employee">Employee</option>
-			</select>
-
-			<button class="sort-btn" on:click={() => (sortDir = sortDir === 'asc' ? 'desc' : 'asc')}>
-				Sort {sortDir === 'asc' ? '▲' : '▼'}
-			</button>
-		</div>
 	</div>
 
 	<table>
@@ -199,37 +195,46 @@
 				<th>Phone</th>
 				<th>Email</th>
 				<th>Role</th>
+				<th>Checklists</th>
 				<th></th>
 			</tr>
 		</thead>
 		<tbody>
-			{#if filteredUsers.length === 0}
-				<tr><td colspan="5">No users found</td></tr>
-			{:else}
-				{#each filteredUsers as u}
-					<tr>
-						<td><a href={`/users/${u.id}`}>{u.lastName}, {u.firstName}</a></td>
-						<td>{u.phone}</td>
-						<td>{u.personalEmail}</td>
-						<td>
-							<select
-								class="role-pill"
-								value={u.role}
-								on:change={(e) =>
-									updateRole(u.id, (e.target as HTMLSelectElement).value)
-								}
-							>
-								<option value="probationary">Probationary</option>
-								<option value="volunteer">Volunteer</option>
-								<option value="employee">Employee</option>
-							</select>
-						</td>
-						<td>
-							<button class="delete" on:click={() => deleteUser(u.id)}>✕</button>
-						</td>
-					</tr>
-				{/each}
-			{/if}
+			{#each filteredUsers as u}
+				<tr>
+					<td>
+						<a
+							class="user-link"
+							on:click={() => goto(`/users/${u.id}`)}
+						>
+							{u.lastName}, {u.firstName}
+						</a>
+					</td>
+					<td>{u.phone}</td>
+					<td>{u.personalEmail}</td>
+					<td>
+						<select
+							class="role-pill"
+							value={u.role}
+							on:change={(e) =>
+								updateRole(u.id, (e.target as HTMLSelectElement).value)
+							}
+						>
+							<option value="probationary">Probationary</option>
+							<option value="volunteer">Volunteer</option>
+							<option value="employee">Employee</option>
+						</select>
+					</td>
+					<td>
+						<button class="link" on:click={() => openChecklistModal(u)}>
+							View
+						</button>
+					</td>
+					<td>
+						<button class="delete" on:click={() => deleteUser(u.id)}>✕</button>
+					</td>
+				</tr>
+			{/each}
 		</tbody>
 	</table>
 </section>
@@ -380,8 +385,27 @@
 	text-decoration: underline;
 }
 
+.user-link {
+	color: #2563eb;
+	cursor: pointer;
+	text-decoration: none;
+	font-weight: 500;
+}
+
+.user-link:hover {
+	text-decoration: underline;
+}
+
 </style>
 
 {#if showRosterModal}
 	<RosterModal on:close={() => (showRosterModal = false)} />
+{/if}
+
+{#if showChecklistModal}
+	<UserChecklistModal
+		userId={selectedUser.id}
+		checklists={userChecklists}
+		on:close={() => (showChecklistModal = false)}
+	/>
 {/if}

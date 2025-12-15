@@ -1,8 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { printChecklist } from '$lib/utils/printChecklist';
 
 	export let data;
+
 	let user = structuredClone(data.user);
+	let checklists: any[] = [];
+	let loadingChecklists = true;
 
 	async function save() {
 		const res = await fetch(`/api/users/${user.id}`, {
@@ -31,22 +36,57 @@
 			alert('Failed to delete user');
 		}
 	}
+
+	// ----------------------------
+	// Checklist logic
+	// ----------------------------
+	onMount(async () => {
+		const res = await fetch(`/api/users/${user.id}/checklists`);
+		checklists = res.ok ? await res.json() : [];
+		loadingChecklists = false;
+	});
+
+	async function toggleItem(item: any) {
+		const newCompleted = !item.completed;
+
+		// optimistic UI
+		item.completed = newCompleted;
+		item.dateCompleted = newCompleted
+			? new Date().toISOString()
+			: null;
+
+		const res = await fetch('/api/checklists/items/toggle', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				userChecklistItemId: item.userChecklistItemId,
+				completed: newCompleted
+			})
+		});
+
+		if (!res.ok) {
+			// rollback
+			item.completed = !newCompleted;
+			item.dateCompleted = newCompleted ? null : item.dateCompleted;
+			alert('Failed to update checklist item');
+		}
+	}
 </script>
 
 <main class="user-details">
 
+	<!-- ================= USER FORM ================= -->
 	<h1>Edit User</h1>
 
 	<div class="form-section">
-
 		<label>First Name</label>
 		<input bind:value={user.firstName} />
 
 		<label>Last Name</label>
 		<input bind:value={user.lastName} />
 
-		<label for="address">Address</label>
-		<input id="address" bind:value={user.address} placeholder="123 Main St" />
+		<label>Address</label>
+		<input bind:value={user.address} placeholder="123 Main St" />
 
 		<label>Personal Email</label>
 		<input type="email" bind:value={user.personalEmail} />
@@ -90,22 +130,72 @@
 
 	<hr />
 
-	<h2>Onboarding Checklist</h2>
-	<p><i>Placeholder checklist — full version coming soon.</i></p>
+	<!-- ================= CHECKLISTS ================= -->
+	<h2>Assigned Checklists</h2>
 
-	<ul class="checklist">
-		<li>Completed Application</li>
-		<li>Background Check</li>
-		<li>Orientation Scheduled</li>
-		<li>PPE Assigned</li>
-		<li>Ride-along Completed</li>
-	</ul>
+	{#if loadingChecklists}
+		<p class="muted">Loading checklists…</p>
+	{:else if checklists.length === 0}
+		<p class="muted">No checklists assigned to this user.</p>
+	{:else}
+		{#each checklists as checklist}
+			<div class="checklist-card">
+				<div class="checklist-header">
+					<h3>{checklist.name}</h3>
+
+					<button
+						class="print-btn"
+						on:click={() =>
+							printChecklist({
+								userName: `${user.lastName}, ${user.firstName}`,
+								checklistName: checklist.name,
+								items: checklist.items
+							})
+						}
+					>
+						Print Checklist
+					</button>
+				</div>
+
+				<table>
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Task</th>
+							<th>Done</th>
+							<th>Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each checklist.items as item}
+							<tr class:completed={item.completed}>
+								<td>{item.number}</td>
+								<td>{item.taskName}</td>
+								<td>
+									<input
+										type="checkbox"
+										checked={item.completed}
+										on:change={() => toggleItem(item)}
+									/>
+								</td>
+								<td>
+									{item.dateCompleted
+										? new Date(item.dateCompleted).toLocaleDateString()
+										: '—'}
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		{/each}
+	{/if}
 
 </main>
 
 <style>
 	.user-details {
-		max-width: 700px;
+		max-width: 900px;
 		margin: 20px auto;
 	}
 
@@ -113,13 +203,15 @@
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 10px 20px;
+		margin-bottom: 30px;
 	}
 
 	label {
 		font-weight: bold;
 	}
 
-	input, select {
+	input,
+	select {
 		padding: 6px;
 		border: 1px solid #ccc;
 		border-radius: 4px;
@@ -135,10 +227,6 @@
 		cursor: pointer;
 	}
 
-	.save-btn:hover {
-		background: #004a9e;
-	}
-
 	.delete-user {
 		margin-top: 20px;
 		padding: 10px 14px;
@@ -149,4 +237,59 @@
 		font-weight: 600;
 		cursor: pointer;
 	}
+
+	hr {
+		margin: 40px 0;
+	}
+
+	.muted {
+		color: #6b7280;
+		font-size: 14px;
+	}
+
+	.checklist-card {
+		margin-top: 24px;
+		padding: 20px;
+		background: #ffffff;
+		border-radius: 14px;
+		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+	}
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-top: 10px;
+	}
+
+	th,
+	td {
+		padding: 10px;
+		border-bottom: 1px solid #e5e7eb;
+		text-align: left;
+	}
+
+	tr.completed td {
+		opacity: 0.6;
+		text-decoration: line-through;
+	}
+
+	.checklist-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.print-btn {
+	background: none;
+	border: none;
+	color: #2563eb;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 0;
+}
+
+.print-btn:hover {
+	text-decoration: underline;
+}
+
 </style>

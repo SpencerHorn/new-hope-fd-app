@@ -12,6 +12,24 @@ CREATE TABLE `auth_users` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `auth_users_email_unique` ON `auth_users` (`email`);--> statement-breakpoint
+CREATE TABLE `checklist_items` (
+	`id` text PRIMARY KEY NOT NULL,
+	`checklist_id` text NOT NULL,
+	`item_number` integer NOT NULL,
+	`task_name` text NOT NULL,
+	`due_date` text,
+	`notes` text,
+	FOREIGN KEY (`checklist_id`) REFERENCES `checklists`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE TABLE `checklists` (
+	`id` text PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`created_at` text DEFAULT 'CURRENT_TIMESTAMP',
+	`updated_at` text DEFAULT 'CURRENT_TIMESTAMP'
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `checklists_name_unique` ON `checklists` (`name`);--> statement-breakpoint
 CREATE TABLE `invites` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`email` text NOT NULL,
@@ -24,6 +42,28 @@ CREATE TABLE `onboarding_items` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`title` text NOT NULL,
 	`order` integer DEFAULT 0
+);
+--> statement-breakpoint
+CREATE TABLE `user_checklist_items` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_checklist_id` text NOT NULL,
+	`checklist_item_id` text NOT NULL,
+	`completed` integer DEFAULT 0 NOT NULL,
+	`date_completed` text,
+	`completed_by` text,
+	`notes` text,
+	FOREIGN KEY (`user_checklist_id`) REFERENCES `user_checklists`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`checklist_item_id`) REFERENCES `checklist_items`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE TABLE `user_checklists` (
+	`id` text PRIMARY KEY NOT NULL,
+	`checklist_id` text NOT NULL,
+	`user_id` integer NOT NULL,
+	`user_phone` text NOT NULL,
+	`assigned_at` text DEFAULT 'CURRENT_TIMESTAMP',
+	FOREIGN KEY (`checklist_id`) REFERENCES `checklists`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `user_onboarding_status` (
