@@ -25,6 +25,13 @@
 				User Management
 			</button>
 
+			<button
+				class:selected={$page.url.pathname.startsWith('/checklists')}
+				on:click={() => goto('/checklists')}
+			>
+				Checklists
+			</button>
+
 			<button on:click={() => (legacyOpen = !legacyOpen)}>
 				Legacy Apps ▸
 			</button>
@@ -58,15 +65,12 @@
 		left: 0;
 		width: 220px;
 		height: 100vh;
-
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
-
 		background: rgba(255, 255, 255, 0.85);
 		backdrop-filter: blur(20px);
 		border-right: 1px solid #e5e7eb;
-
 		padding: 16px;
 		box-sizing: border-box;
 	}
@@ -75,7 +79,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
-		overflow-y: auto; /* 👈 allows scrolling if needed */
+		overflow-y: auto;
 	}
 
 	.logo {
