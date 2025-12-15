@@ -4,16 +4,16 @@
 	import AssignChecklistModal from '$lib/components/AssignChecklistModal.svelte';
 	import UnassignChecklistModal from '$lib/components/UnassignChecklistModal.svelte';
 	import EditChecklistModal from '$lib/components/EditChecklistModal.svelte';
+    import AssignedUsersModal from '$lib/components/AssignedUsersModal.svelte';
+
 
 	let showAssignModal = false;
 	let showUnassignModal = false;
+    let showAssignedModal = false;
 	let selectedChecklist: any = null;
-
 	let showCreateModal = false;
-
 	let showEditModal = false;
 	let editChecklistId: string | null = null;
-
 	let checklists: any[] = [];
 	let loading = true;
 
@@ -88,7 +88,17 @@
 					<tr>
 						<td>{checklist.name}</td>
 						<td>{checklist.itemCount}</td>
-						<td>{checklist.assignedCount ?? 0}</td>
+						<td>
+                            <button
+                                class="link"
+                                on:click={() => {
+                                    selectedChecklist = checklist;
+                                    showAssignedModal = true;
+                                }}
+                            >
+                                {checklist.assignedCount ?? 0}
+                            </button>
+                        </td>
 						<td class="actions">
 							<button class="link" on:click={() => openAssign(checklist)}>
 								Assign
@@ -148,6 +158,18 @@
 		}}
 	/>
 {/if}
+
+{#if showAssignedModal}
+	<AssignedUsersModal
+		checklistId={selectedChecklist.id}
+		checklistName={selectedChecklist.name}
+		on:close={() => {
+			showAssignedModal = false;
+			loadChecklists();
+		}}
+	/>
+{/if}
+
 
 <style>
 	.card {
