@@ -1,22 +1,27 @@
 // drizzle.config.ts
 import { defineConfig } from 'drizzle-kit';
 
-const prod = process.env.NODE_ENV === 'production';
-
 export default defineConfig({
 	dialect: 'sqlite',
+
+	// Single source of truth for schema
 	schema: './src/lib/db/schema.ts',
 
-	// The ACTUAL database file location
+	// Database location (local vs Render persistent disk)
 	dbCredentials: {
-		url: prod ? '/var/data/newhopefd.db' : 'newhopefd.db'
+		url: process.env.NODE_ENV === 'production' ? '/var/data/newhopefd.db' : 'newhopefd.db'
 	},
 
-	// Store migration meta INSIDE persistent storage
-	out: prod
-		? '/var/data/drizzle' // Render runtime output (persistent)
-		: './migrations' // Local folder
+	/**
+	 * IMPORTANT:
+	 * Always use the SAME migrations folder in all environments.
+	 * Do NOT change this per-environment.
+	 *
+	 * Render will read migrations from the repo,
+	 * but apply them to the persistent SQLite DB.
+	 */
+	out: './migrations'
 
-	// Optional but recommended:
-	// migrations: { table: "__drizzle_migrations" }
+	// Optional (fine to omit since Drizzle defaults are OK):
+	// migrations: { table: '__drizzle_migrations' }
 });
