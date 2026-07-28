@@ -38,8 +38,8 @@ export function getDB() {
 	// ❗ ONLY schema goes here — no migrations option!
 	dbInstance = drizzle(sqlite, { schema });
 
-	// Keep runtime DB schema in sync (prod + local dev) before handling requests.
-	if (!isBuild) {
+	// In production, migrations are handled by scripts/init.ts before app startup.
+	if (!isBuild && !isProd) {
 		migrate(dbInstance, { migrationsFolder: './migrations' });
 	}
 

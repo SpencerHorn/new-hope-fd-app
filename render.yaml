@@ -9,7 +9,7 @@ services:
       npm install
       npm run build
 
-    startCommand: node build
+    startCommand: npm run init:prod && node build
 
     envVars:
       - key: NODE_VERSION
