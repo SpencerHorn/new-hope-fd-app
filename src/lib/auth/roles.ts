@@ -7,5 +7,9 @@ export function isAppRole(role: string): role is AppRole {
 }
 
 export function isAdministrator(role: string | null | undefined): boolean {
-	return role === 'administrator';
+	return role === 'administrator' || role === 'admin';
+}
+
+export function canViewChecklists(role: string | null | undefined): boolean {
+	return role === 'administrator' || role === 'admin' || role === 'employee' || role === 'volunteer';
 }

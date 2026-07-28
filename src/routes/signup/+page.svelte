@@ -1,12 +1,12 @@
 <script lang="ts">
 	export let form;
 
-	let firstName = '';
-	let lastName = '';
-	let email = '';
-	let phone = '';
-	let password = '';
-	let confirm = '';
+	let firstName = form?.values?.firstName ?? '';
+	let lastName = form?.values?.lastName ?? '';
+	let email = form?.values?.email ?? '';
+	let phone = form?.values?.phone ?? '';
+	let password = form?.values?.password ?? '';
+	let confirm = form?.values?.confirm ?? '';
 </script>
 
 <div class="signup-wrapper">

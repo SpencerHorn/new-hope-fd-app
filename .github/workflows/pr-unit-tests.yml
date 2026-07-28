@@ -1,0 +1,40 @@
+name: PR Unit Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run permission and seed unit tests
+        run: >-
+          npm run test:unit --
+          src/tests/lib/server/admin-seed.test.ts
+          src/tests/routes/api-users/server.test.ts
+          src/tests/routes/api-users-search/server.test.ts
+          src/tests/routes/api-elevate/server.test.ts
+          src/tests/routes/users-page/server.test.ts
+          src/tests/routes/users-id-page/server.test.ts
+          src/tests/routes/checklists-page/server.test.ts
+          src/tests/routes/api-users-id/server.test.ts
+          src/tests/routes/api-users-role/server.test.ts
+          src/tests/routes/api-users-userid-checklists/server.test.ts
+          src/tests/lib/auth/roles.test.ts

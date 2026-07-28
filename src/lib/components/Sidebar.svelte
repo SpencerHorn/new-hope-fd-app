@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { isAdministrator } from '$lib/auth/roles';
+	import { canViewChecklists, isAdministrator } from '$lib/auth/roles';
 
 	export let appRole = 'probationary';
 	let legacyOpen = false;
 	$: canManageRoles = isAdministrator(appRole);
+	$: canSeeChecklists = canViewChecklists(appRole);
 </script>
 
 <aside class="sidebar">
@@ -28,7 +29,7 @@
 				User Management
 			</button>
 
-			{#if canManageRoles}
+			{#if canSeeChecklists}
 				<button
 					class:selected={$page.url.pathname.startsWith('/checklists')}
 					on:click={() => goto('/checklists')}

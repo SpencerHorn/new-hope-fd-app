@@ -30,28 +30,37 @@ export const actions = {
 		const password = String(form.get('password') ?? '');
 		const confirm = String(form.get('confirm') ?? '');
 
+		const values = {
+			firstName: firstNameRaw,
+			lastName: lastNameRaw,
+			email,
+			phone: phoneRaw,
+			password,
+			confirm
+		};
+
 		if (!firstNameRaw || !lastNameRaw || !email || !phoneRaw || !password || !confirm) {
-			return fail(400, { message: 'All fields are required.' });
+			return fail(400, { message: 'All fields are required.', values });
 		}
 
 		if (password.length < 10) {
-			return fail(400, { message: 'Password must be at least 10 characters.' });
+			return fail(400, { message: 'Password must be at least 10 characters.', values });
 		}
 
 		if (password !== confirm) {
-			return fail(400, { message: 'Passwords do not match.' });
+			return fail(400, { message: 'Passwords do not match.', values });
 		}
 
 		const phone = formatPhone(phoneRaw);
 		if (!phone) {
-			return fail(400, { message: 'Phone number must contain exactly 10 digits.' });
+			return fail(400, { message: 'Phone number must contain exactly 10 digits.', values });
 		}
 
 		const db = await getDB();
 
 		const existingAuthUser = await db.select().from(authUsers).where(eq(authUsers.email, email)).get();
 		if (existingAuthUser) {
-			return fail(400, { message: 'An account with that email already exists.' });
+			return fail(400, { message: 'An account with that email already exists.', values });
 		}
 
 		const existingProfile = await db
@@ -61,7 +70,8 @@ export const actions = {
 			.get();
 		if (existingProfile) {
 			return fail(400, {
-				message: 'A member profile with that email or phone already exists. Please contact an administrator.'
+				message: 'A member profile with that email or phone already exists. Please contact an administrator.',
+				values
 			});
 		}
 
@@ -75,7 +85,7 @@ export const actions = {
 			.returning({ id: authUsers.id });
 
 		if (!insertedAuth[0]?.id) {
-			return fail(500, { message: 'Unable to create account.' });
+			return fail(500, { message: 'Unable to create account.', values });
 		}
 
 		await db.insert(users).values({

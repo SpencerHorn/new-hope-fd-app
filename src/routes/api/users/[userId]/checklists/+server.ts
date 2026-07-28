@@ -8,12 +8,16 @@ import {
 } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 
-export const GET = async ({ params }) => {
-	const db = getDB();
+export const GET = async ({ params, locals }) => {
+	const db = await getDB();
 	const userId = Number(params.userId);
 
 	if (!userId) {
 		return json({ error: 'Invalid user id' }, { status: 400 });
+	}
+
+	if (locals?.appUser?.role === 'probationary' && locals?.appUser?.id !== userId) {
+		return json({ error: 'Forbidden' }, { status: 403 });
 	}
 
 	const rows = db

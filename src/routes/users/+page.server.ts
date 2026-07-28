@@ -3,24 +3,39 @@ import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
 import { isAdministrator, isAppRole } from '$lib/auth/roles';
 import { fail } from '@sveltejs/kit';
-import { and, like } from 'drizzle-orm';
+import { and, eq, like } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const db = await getDB();
+	const isAdmin = isAdministrator(locals.appUser?.role);
 
 	const firstName = url.searchParams.get('firstName') ?? '';
 	const lastName = url.searchParams.get('lastName') ?? '';
 	const phone = url.searchParams.get('phone') ?? '';
 	const personalEmail = url.searchParams.get('personalEmail') ?? '';
-	const role = url.searchParams.get('role') ?? '';
+	const roleFilter = url.searchParams.get('role') ?? '';
+	const isProbationary = locals.appUser?.role === 'probationary';
+	const currentUserId = locals.appUser?.id;
 
 	const conditions = [];
+
+	if (isProbationary) {
+		if (!currentUserId) {
+			return {
+				users: [],
+				canManageRoles: false,
+				canDeleteUsers: false,
+				canManageUsers: false
+			};
+		}
+		conditions.push(eq(users.id, currentUserId));
+	}
 
 	if (firstName) conditions.push(like(users.firstName, `%${firstName}%`));
 	if (lastName) conditions.push(like(users.lastName, `%${lastName}%`));
 	if (phone) conditions.push(like(users.phone, `%${phone}%`));
 	if (personalEmail) conditions.push(like(users.personalEmail, `%${personalEmail}%`));
-	if (role) conditions.push(like(users.role, role));
+	if (roleFilter) conditions.push(like(users.role, roleFilter));
 
 	const query =
 		conditions.length > 0
@@ -31,12 +46,18 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 
 	return {
 		users: results,
-		canManageRoles: isAdministrator(locals.appUser?.role)
+		canManageRoles: isAdmin,
+		canDeleteUsers: isAdmin,
+		canManageUsers: isAdmin
 	};
 };
 
 export const actions: Actions = {
 	create: async ({ request, locals }) => {
+		if (!isAdministrator(locals.appUser?.role)) {
+			return fail(403, { error: 'Forbidden' });
+		}
+
 		const form = await request.formData();
 
 		const firstName = String(form.get('firstName') ?? '');

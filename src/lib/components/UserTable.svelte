@@ -4,6 +4,8 @@
 
 	export let users: any[] = [];
 	export let canManageRoles = false;
+	export let canDeleteUsers = false;
+	export let canManageUsers = false;
 
 	let showRosterModal = false;
 	let showChecklistModal = false;
@@ -140,48 +142,52 @@
 <section class="card">
 	<h1>User Management</h1>
 
-	<form method="POST" action="?/create" class="user-form" on:submit={handleAddSubmit}>
-		<div class="form-grid">
-			<input name="firstName" placeholder="First name" bind:value={firstName} />
-			<input name="lastName" placeholder="Last name" bind:value={lastName} />
-			<input name="phone" placeholder="Phone" bind:value={phone} />
-			<input name="personalEmail" placeholder="Personal email" bind:value={personalEmail} />
-
-			{#if canManageRoles}
-				<select name="role">
-					<option value="probationary">Probationary</option>
-					<option value="volunteer">Volunteer</option>
-					<option value="employee">Employee</option>
-					<option value="administrator">Administrator</option>
-				</select>
-			{:else}
-				<input value="Probationary" disabled />
-				<input type="hidden" name="role" value="probationary" />
-			{/if}
-		</div>
-
-		{#if showMore}
+	{#if canManageUsers}
+		<form method="POST" action="?/create" class="user-form" on:submit={handleAddSubmit}>
 			<div class="form-grid">
-				<input name="address" placeholder="Address" bind:value={address} />
-				<input name="workEmail" placeholder="Work email" bind:value={workEmail} />
-				<input name="maskSize" placeholder="Mask size" bind:value={maskSize} />
-				<input name="fitTestDate" type="date" bind:value={fitTestDate} />
-				<input name="tshirtSize" placeholder="T-shirt size" bind:value={tshirtSize} />
+				<input name="firstName" placeholder="First name" bind:value={firstName} />
+				<input name="lastName" placeholder="Last name" bind:value={lastName} />
+				<input name="phone" placeholder="Phone" bind:value={phone} />
+				<input name="personalEmail" placeholder="Personal email" bind:value={personalEmail} />
+
+				{#if canManageRoles}
+					<select name="role">
+						<option value="probationary">Probationary</option>
+						<option value="volunteer">Volunteer</option>
+						<option value="employee">Employee</option>
+						<option value="administrator">Administrator</option>
+					</select>
+				{:else}
+					<input value="Probationary" disabled />
+					<input type="hidden" name="role" value="probationary" />
+				{/if}
 			</div>
-		{/if}
 
-		{#if formError}
-			<p style="color:#dc2626">{formError}</p>
-		{/if}
+			{#if showMore}
+				<div class="form-grid">
+					<input name="address" placeholder="Address" bind:value={address} />
+					<input name="workEmail" placeholder="Work email" bind:value={workEmail} />
+					<input name="maskSize" placeholder="Mask size" bind:value={maskSize} />
+					<input name="fitTestDate" type="date" bind:value={fitTestDate} />
+					<input name="tshirtSize" placeholder="T-shirt size" bind:value={tshirtSize} />
+				</div>
+			{/if}
 
-		<div class="actions-row">
-			<button class="primary" type="submit">Add User</button>
-		</div>
+			{#if formError}
+				<p style="color:#dc2626">{formError}</p>
+			{/if}
 
-		<button type="button" class="link" on:click={() => (showMore = !showMore)}>
-			{showMore ? 'Less fields' : 'More fields'}
-		</button>
-	</form>
+			<div class="actions-row">
+				<button class="primary" type="submit">Add User</button>
+			</div>
+
+			<button type="button" class="link" on:click={() => (showMore = !showMore)}>
+				{showMore ? 'Less fields' : 'More fields'}
+			</button>
+		</form>
+	{:else}
+		<p class="muted-note">Only administrators can add users.</p>
+	{/if}
 </section>
 
 <!-- ================= TABLE ================= -->
@@ -239,7 +245,9 @@
 						</button>
 					</td>
 					<td>
-						<button class="delete" on:click={() => deleteUser(u.id)}>✕</button>
+						{#if canDeleteUsers}
+							<button class="delete" on:click={() => deleteUser(u.id)}>✕</button>
+						{/if}
 					</td>
 				</tr>
 			{/each}
@@ -311,6 +319,12 @@
 		font-size: 14px;
 		cursor: pointer;
 		align-self: flex-start;
+	}
+
+	.muted-note {
+		color: #6b7280;
+		font-size: 14px;
+		margin: 0;
 	}
 
 	/* ---------- Table ---------- */

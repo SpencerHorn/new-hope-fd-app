@@ -2,10 +2,15 @@
 import { json } from '@sveltejs/kit';
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
+import { isAdministrator } from '$lib/auth/roles';
 import { eq } from 'drizzle-orm';
 
-export const DELETE = async ({ params }) => {
-	const db = getDB();
+export const DELETE = async ({ params, locals }) => {
+	if (!isAdministrator(locals?.appUser?.role)) {
+		return json({ message: 'Forbidden' }, { status: 403 });
+	}
+
+	const db = await getDB();
 	const id = Number(params.id);
 
 	await db.delete(users).where(eq(users.id, id));
