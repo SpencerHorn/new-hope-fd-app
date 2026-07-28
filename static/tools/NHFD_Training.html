@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Hope Fire Department Training Report</title>
+    <link rel="stylesheet" href="/src/nhvfdTrainigSheet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  </head>
+  <body>
+    <div class="paper-container">
+      <div class="pdf-export">
+        <button class="export-btn" onclick="exportToPDF()">Save as PDF</button>
+        <button class="clear-btn" onclick="clearForm()">Clear Form</button>
+      </div>
+
+      <div class="header">
+        <div class="header-content">
+          <div class="title-with-logo">
+            <img src="/src/assets/new_hope_logo.webp" alt="New Hope Fire Department Logo" class="logo-image" />
+            <h1>New Hope Fire Department Training Report</h1>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-row">
+          <div class="form-field">
+            <label>Name of Instructor:</label>
+            <input type="text" name="instructor" />
+          </div>
+          <div class="form-field">
+            <label>Date:</label>
+            <input type="text" name="date" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Time Started:</label>
+            <input type="text" name="time_started" />
+          </div>
+          <div class="form-field">
+            <label>Time Finished:</label>
+            <input type="text" name="time_finished" />
+          </div>
+          <div class="form-field">
+            <label>Duration:</label>
+            <input type="text" name="duration" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Subject Covered:</label>
+            <input type="text" name="subject" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Location of Training:</label>
+            <input type="text" name="location" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Equipment and Training Aids Used:</label>
+            <input type="text" name="equipment" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Description of Training:</label>
+            <textarea name="description"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="volunteer-management">
+        <strong>Manage Volunteers:</strong><br />
+        <input type="text" id="newVolunteerName" placeholder="Last, First" style="width: 150px" />
+        <button onclick="addVolunteer()">Add Volunteer</button>
+        <small>Format: Lastname, Firstname</small>
+      </div>
+
+      <div class="management-controls">
+        <button class="save-btn" onclick="saveVolunteerList()">Save Volunteer List</button>
+      </div>
+
+      <div class="legend">T-Training | O-Officer | D-Driver | N-New Driver | H-Haz Mat | R-Recruit | E-EMS</div>
+
+      <table class="attendance-table" id="attendanceTable">
+        <thead>
+          <tr>
+            <th class="name-column">Initial by your name</th>
+            <th>T</th>
+            <th>O</th>
+            <th>D</th>
+            <th>N</th>
+            <th>H</th>
+            <th>R</th>
+            <th>E</th>
+            <th class="name-column">Initial by your name</th>
+            <th>T</th>
+            <th>O</th>
+            <th>D</th>
+            <th>N</th>
+            <th>H</th>
+            <th>R</th>
+            <th>E</th>
+          </tr>
+        </thead>
+        <tbody id="volunteerList"></tbody>
+      </table>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Instructor Signature:</label>
+          <input type="text" name="signature" class="signature-line" />
+        </div>
+      </div>
+
+      <div class="footer">
+        Version:
+        <input id="versionField" type="text" style="border: none; font-size: 9px; width: 150px;" />
+      </div>
+
+      <script src="/src/nhfdToolsTraining.js"></script>
+    </div>
+  </body>
+</html>

@@ -4,6 +4,7 @@
 	import { canViewChecklists, isAdministrator } from '$lib/auth/roles';
 
 	export let appRole = 'probationary';
+	let toolsOpen = false;
 	let legacyOpen = false;
 	$: canManageRoles = isAdministrator(appRole);
 	$: canSeeChecklists = canViewChecklists(appRole);
@@ -21,6 +22,28 @@
 			>
 				Dashboard
 			</button>
+
+			<button
+				class:selected={$page.url.pathname.startsWith('/tools')}
+				on:click={() => {
+					if ($page.url.pathname.startsWith('/tools')) {
+						toolsOpen = !toolsOpen;
+						return;
+					}
+
+					toolsOpen = true;
+					goto('/tools');
+				}}
+			>
+				Tools ▸
+			</button>
+
+			{#if toolsOpen || $page.url.pathname.startsWith('/tools')}
+				<div class="legacy">
+					<button class="subnav" on:click={() => goto('/tools/training')}>Training</button>
+					<button class="subnav" on:click={() => goto('/tools/roster')}>Roster</button>
+				</div>
+			{/if}
 
 			<button
 				class:selected={$page.url.pathname.startsWith('/users')}
@@ -120,6 +143,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 6px;
+	}
+
+	.subnav {
+		font-size: 14px;
+		padding: 8px 10px;
+		background: #eef2ff;
 	}
 
 	.legacy a {

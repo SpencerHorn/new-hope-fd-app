@@ -1,5 +1,4 @@
 <script lang="ts">
-	import RosterModal from '$lib/components/RosterModal.svelte';
 	import UserChecklistModal from '$lib/components/UserChecklistModal.svelte';
 
 	export let users: any[] = [];
@@ -7,7 +6,6 @@
 	export let canDeleteUsers = false;
 	export let canManageUsers = false;
 
-	let showRosterModal = false;
 	let showChecklistModal = false;
 	let selectedUser: any = null;
 	let userChecklists: any[] = [];
@@ -136,6 +134,14 @@
 		const res = await fetch(`/api/users/${user.id}/checklists`);
 		userChecklists = await res.json();
 	}
+
+	function printRosterFromTools() {
+		window.open('/tools/NHFD_Roster.html?autoprint=1', '_blank', 'noopener,noreferrer');
+	}
+
+	function printTrainingFromTools() {
+		window.open('/tools/NHFD_Training.html?autoprint=1', '_blank', 'noopener,noreferrer');
+	}
 </script>
 
 <!-- ================= FORM ================= -->
@@ -195,14 +201,16 @@
 	<div class="table-header">
 		<h2>Users</h2>
 
-		<button class="print-roster" on:click={() => (showRosterModal = true)}>
-			Print Roster
-		</button>
+		<div class="print-actions">
+			<button class="print-roster" on:click={printRosterFromTools}>Print Roster</button>
+			<button class="print-roster" on:click={printTrainingFromTools}>Print Training Sheet</button>
+		</div>
 	</div>
 
 	<table>
 		<thead>
 			<tr>
+				<th class="row-number">#</th>
 				<th>Name</th>
 				<th>Phone</th>
 				<th>Email</th>
@@ -212,8 +220,9 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each filteredUsers as u}
+			{#each filteredUsers as u, index}
 				<tr>
+					<td class="row-number">{index + 1}</td>
 					<td>
 						<a class="user-link" href={`/users/${u.id}`}>
 							{u.lastName}, {u.firstName}
@@ -337,6 +346,12 @@
 		flex-wrap: wrap;
 	}
 
+	.print-actions {
+		display: flex;
+		gap: 14px;
+		flex-wrap: wrap;
+	}
+
 	table {
 		width: 100%;
 		border-collapse: collapse;
@@ -382,6 +397,13 @@
 		margin-bottom: 12px;
 	}
 
+	.row-number {
+		width: 42px;
+		text-align: center;
+		color: #4b5563;
+		font-weight: 600;
+	}
+
 .print-roster {
 	background: none;
 	border: none;
@@ -407,10 +429,6 @@
 }
 
 </style>
-
-{#if showRosterModal}
-	<RosterModal on:close={() => (showRosterModal = false)} />
-{/if}
 
 {#if showChecklistModal}
 	<UserChecklistModal
