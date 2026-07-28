@@ -2,18 +2,19 @@
 	import { createEventDispatcher } from 'svelte';
 	import { printChecklist } from '$lib/utils/printChecklist';
 
+	export let userId: number;
 	export let checklists: any[] = [];
 
 	const dispatch = createEventDispatcher();
+
+	void userId;
 
 	async function toggleItem(item: any) {
 		const newCompleted = !item.completed;
 
 		// optimistic UI update
 		item.completed = newCompleted;
-		item.dateCompleted = newCompleted
-			? new Date().toISOString()
-			: null;
+		item.dateCompleted = newCompleted ? new Date().toISOString() : null;
 
 		const res = await fetch('/api/checklists/items/toggle', {
 			method: 'POST',
@@ -32,7 +33,8 @@
 	}
 </script>
 
-<div class="backdrop" on:click={() => dispatch('close')} />
+<button class="backdrop" type="button" aria-label="Close modal" on:click={() => dispatch('close')}
+></button>
 
 <div class="modal">
 	<header class="modal-header">

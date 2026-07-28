@@ -5,6 +5,8 @@ import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
 import { sql, inArray } from 'drizzle-orm';
 
+type UserRow = typeof users.$inferSelect;
+
 // Human labels for DB keys
 const FIELD_LABELS: Record<string, string> = {
 	address: 'Address',
@@ -17,21 +19,22 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 // Build "Last, First"
-function getFieldValue(user: any, key: string): string {
+function getFieldValue(user: UserRow, key: string): string {
 	if (key === 'name') {
 		const ln = user.lastName ?? '';
 		const fn = user.firstName ?? '';
 		if (!ln && !fn) return '';
 		return `${ln}, ${fn}`.trim();
 	}
-	return user[key] ?? '';
+	const dynamicValue = (user as Record<string, unknown>)[key];
+	return typeof dynamicValue === 'string' ? dynamicValue : String(dynamicValue ?? '');
 }
 
 /* ----------------------------------------------------------
    TWO-PER-ROW MODE (≤ 3 selected fields)
    With: NO WRAP, NO OVERLAP, TRUNCATION, SMALL FONT (8)
 ----------------------------------------------------------- */
-function renderTwoPerRow(doc: PDFKit.PDFDocument, rows: any[], otherFields: string[]) {
+function renderTwoPerRow(doc: PDFKit.PDFDocument, rows: UserRow[], otherFields: string[]) {
 	const marginLeft = doc.page.margins.left;
 	const marginRight = doc.page.margins.right;
 	const marginTop = doc.y;
@@ -164,7 +167,7 @@ function renderTwoPerRow(doc: PDFKit.PDFDocument, rows: any[], otherFields: stri
 /* ----------------------------------------------------------
    FULL-WIDTH MODE (≥ 4 selected fields)
 ----------------------------------------------------------- */
-function renderFullWidth(doc: PDFKit.PDFDocument, rows: any[], otherFields: string[]) {
+function renderFullWidth(doc: PDFKit.PDFDocument, rows: UserRow[], otherFields: string[]) {
 	const marginLeft = doc.page.margins.left;
 	const marginRight = doc.page.margins.right;
 	const marginTop = doc.y;
@@ -254,18 +257,19 @@ export const POST: RequestHandler = async ({ request }) => {
 	if (groups?.volunteer) rolesToInclude.push('volunteer');
 	if (groups?.employee) rolesToInclude.push('employee');
 
-	let query = db.select().from(users);
-
-	if (rolesToInclude.length > 0) {
-		query = query.where(
-			inArray(
-				sql`lower(${users.role})`,
-				rolesToInclude.map((r) => r.toLowerCase())
-			)
-		);
-	}
-
-	const allUsers = await query.all();
+	const allUsers =
+		rolesToInclude.length > 0
+			? await db
+					.select()
+					.from(users)
+					.where(
+						inArray(
+							sql`lower(${users.role})`,
+							rolesToInclude.map((r) => r.toLowerCase())
+						)
+					)
+					.all()
+			: await db.select().from(users).all();
 
 	// Sort alphabetically
 	const sortedUsers = [...allUsers].sort((a, b) => {
@@ -321,8 +325,9 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	doc.end();
 	const buffer = await pdfBufferPromise;
+	const body = new Uint8Array(buffer);
 
-	return new Response(buffer, {
+	return new Response(body, {
 		headers: {
 			'Content-Type': 'application/pdf',
 			'Content-Disposition': 'inline; filename="roster.pdf"'

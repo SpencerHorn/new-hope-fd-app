@@ -1,11 +1,9 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
-
     let email = "";
     let result = "";
     let error = "";
 
-    async function createInvite(e) {
+    async function createInvite(e: SubmitEvent) {
         e.preventDefault();
 
         const res = await fetch("/api/invite", {

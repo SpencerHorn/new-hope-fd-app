@@ -2,22 +2,35 @@
 import { json } from '@sveltejs/kit';
 import { getDB } from '$lib/db/client';
 import { invites, authUsers } from '$lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { getLucia } from '$lib/server/auth';
 import { Argon2id } from 'oslo/password';
 
-export async function POST({ params, request }) {
+export async function POST({ params, request, cookies }) {
 	const db = await getDB();
 	const lucia = await getLucia();
 
 	const token = params.token;
 	const { password } = await request.json();
+	if (!password || String(password).length < 10) {
+		return json({ error: 'Password must be at least 10 characters.' }, { status: 400 });
+	}
 
 	// find invite row
-	const invite = await db.select().from(invites).where(eq(invites.token, token)).get();
+	const invite = await db
+		.select()
+		.from(invites)
+		.where(and(eq(invites.token, token), eq(invites.used, 0)))
+		.get();
 
 	if (!invite) {
 		return json({ error: 'Invalid invite token' }, { status: 400 });
+	}
+
+	const existing = await db.select().from(authUsers).where(eq(authUsers.email, invite.email)).get();
+	if (existing) {
+		await db.delete(invites).where(eq(invites.token, token));
+		return json({ error: 'An account for this email already exists.' }, { status: 400 });
 	}
 
 	// hash password
@@ -40,10 +53,12 @@ export async function POST({ params, request }) {
 	// create session
 	const session = await lucia.createSession(userId, {});
 	const sessionCookie = lucia.createSessionCookie(session.id);
+	cookies.set(sessionCookie.name, sessionCookie.value, {
+		...sessionCookie.attributes,
+		path: '/'
+	});
 
 	return json({
-		sessionCookieName: sessionCookie.name,
-		sessionCookieValue: sessionCookie.value,
-		sessionCookieAttributes: sessionCookie.attributes
+		success: true
 	});
 }

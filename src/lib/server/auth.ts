@@ -1,6 +1,7 @@
 // src/lib/server/auth.ts
 import { Lucia } from 'lucia';
 import { DrizzleSQLiteAdapter } from '@lucia-auth/adapter-drizzle';
+import type { RequestEvent } from '@sveltejs/kit';
 import { getDB } from '$lib/db/client';
 import { authUsers, authSessions } from '$lib/db/schema';
 
@@ -28,7 +29,7 @@ export async function getLucia() {
 }
 
 // Helper for hooks.server.ts
-export async function validateRequest(event) {
+export async function validateRequest(event: RequestEvent) {
 	const lucia = await getLucia();
 
 	const sessionId = event.cookies.get('auth_session');
@@ -57,7 +58,7 @@ export async function validateRequest(event) {
 
 declare module 'lucia' {
 	interface Register {
-		Lucia: ReturnType<typeof Lucia>;
+		Lucia: Lucia;
 		UserId: number;
 		DatabaseUserAttributes: { email: string };
 	}

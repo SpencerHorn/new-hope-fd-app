@@ -1,4 +1,4 @@
-import { db } from '$lib/db';
+import { getDB } from '$lib/db/client';
 import {
 	checklists,
 	checklistItems,
@@ -6,7 +6,7 @@ import {
 	userChecklistItems,
 	users
 } from '$lib/db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
 type AssignOptions = {
@@ -23,6 +23,9 @@ export async function assignChecklist({
 	assignTo,
 	assignedBy
 }: AssignOptions) {
+	const db = getDB();
+	void assignedBy;
+
 	return db.transaction(async (tx) => {
 		// 1️⃣ Ensure checklist exists
 		const [checklist] = await tx
@@ -72,9 +75,11 @@ export async function assignChecklist({
 				.select()
 				.from(userChecklists)
 				.where(
-					eq(userChecklists.userId, user.id)
-				)
-				.where(eq(userChecklists.checklistId, checklistId));
+					and(
+						eq(userChecklists.userId, user.id),
+						eq(userChecklists.checklistId, checklistId)
+					)
+				);
 
 			if (existing.length > 0) continue;
 

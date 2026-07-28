@@ -2,6 +2,7 @@
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as schema from './schema';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -36,6 +37,11 @@ export function getDB() {
 
 	// ❗ ONLY schema goes here — no migrations option!
 	dbInstance = drizzle(sqlite, { schema });
+
+	// Keep local dev DB schema in sync so auth tables exist before login.
+	if (!isBuild && !isProd) {
+		migrate(dbInstance, { migrationsFolder: './migrations' });
+	}
 
 	console.log(`SQLite DB loaded from ${dbPath} (prod=${isProd}, build=${isBuild})`);
 
