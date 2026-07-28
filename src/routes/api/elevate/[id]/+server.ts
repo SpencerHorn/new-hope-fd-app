@@ -2,15 +2,20 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
+import { isAdministrator, isAppRole } from '$lib/auth/roles';
 import { eq } from 'drizzle-orm';
 
 // PATCH /api/elevate/:id
-export const PATCH: RequestHandler = async ({ params, request }) => {
+export const PATCH: RequestHandler = async ({ params, request, locals }) => {
+	if (!isAdministrator(locals?.appUser?.role)) {
+		return json({ message: 'Forbidden' }, { status: 403 });
+	}
+
 	const db = getDB();
 	const id = Number(params.id);
 	const { role } = await request.json();
 
-	if (!['probationary', 'volunteer', 'employee'].includes(role)) {
+	if (!isAppRole(role)) {
 		return json({ message: 'Invalid role' }, { status: 400 });
 	}
 

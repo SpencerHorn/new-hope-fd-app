@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { canViewChecklists, isAdministrator } from '$lib/auth/roles';
 
+	export let appRole = 'probationary';
 	let legacyOpen = false;
+	$: canManageRoles = isAdministrator(appRole);
+	$: canSeeChecklists = canViewChecklists(appRole);
 </script>
 
 <aside class="sidebar">
@@ -25,12 +29,14 @@
 				User Management
 			</button>
 
-			<button
-				class:selected={$page.url.pathname.startsWith('/checklists')}
-				on:click={() => goto('/checklists')}
-			>
-				Checklists
-			</button>
+			{#if canSeeChecklists}
+				<button
+					class:selected={$page.url.pathname.startsWith('/checklists')}
+					on:click={() => goto('/checklists')}
+				>
+					Checklists
+				</button>
+			{/if}
 
 			<button on:click={() => (legacyOpen = !legacyOpen)}>
 				Legacy Apps ▸
@@ -48,9 +54,11 @@
 
 	<!-- BOTTOM (STICKY) -->
 	<div class="sidebar-bottom">
-		<button on:click={() => goto('/invite/create')}>
-			Invite User
-		</button>
+		{#if canManageRoles}
+			<button on:click={() => goto('/invite/create')}>
+				Invite User
+			</button>
+		{/if}
 
 		<form method="POST" action="/logout">
 			<button class="logout">Logout</button>

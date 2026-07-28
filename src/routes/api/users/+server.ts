@@ -3,18 +3,27 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { isAdministrator } from '$lib/auth/roles';
 
 // GET /api/users
-export const GET: RequestHandler = async () => {
-	const db = getDB();
+export const GET: RequestHandler = async ({ locals }) => {
+	const db = await getDB();
 
-	const result = db.select().from(users).all();
+	const result =
+		locals?.appUser?.role === 'probationary' && locals?.appUser?.id
+			? db.select().from(users).where(eq(users.id, locals.appUser.id)).all()
+			: db.select().from(users).all();
+
 	return json(result);
 };
 
 // POST /api/users
-export const POST: RequestHandler = async ({ request }) => {
-	const db = getDB();
+export const POST: RequestHandler = async ({ request, locals }) => {
+	if (!isAdministrator(locals?.appUser?.role)) {
+		return json({ message: 'Forbidden' }, { status: 403 });
+	}
+
+	const db = await getDB();
 	const data = await request.json();
 
 	// Ensure required fields

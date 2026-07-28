@@ -23,4 +23,22 @@ describe('api users search', () => {
 		expect(res.status).toBe(200);
 		await expect(res.json()).resolves.toEqual([{ id: 1, firstName: 'John' }]);
 	});
+
+	it('applies probationary self-only filtering', async () => {
+		const whereMock = vi.fn(() => ({ all: () => [{ id: 9, firstName: 'Self' }] }));
+		vi.mocked(getDB).mockReturnValue({
+			select: () => ({
+				from: () => ({ where: whereMock })
+			})
+		} as any);
+
+		const res = await GET({
+			url: new URL('http://localhost/api/users/search?query=self'),
+			locals: { appUser: { role: 'probationary', id: 9 } }
+		} as any);
+
+		expect(res.status).toBe(200);
+		expect(whereMock).toHaveBeenCalled();
+		await expect(res.json()).resolves.toEqual([{ id: 9, firstName: 'Self' }]);
+	});
 });

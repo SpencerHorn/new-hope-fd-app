@@ -91,28 +91,46 @@
 	{:else}
 		<!-- ================= USER FORM ================= -->
 		<h1>Edit User</h1>
+		{#if !data.canManageUsers}
+			<p class="muted">View only. Only administrators can modify user records.</p>
+		{/if}
 
 		<div class="form-section">
 			<label for="firstName">First Name</label>
-			<input id="firstName" bind:value={user.firstName} />
+			<input id="firstName" bind:value={user.firstName} disabled={!data.canManageUsers} />
 
 			<label for="lastName">Last Name</label>
-			<input id="lastName" bind:value={user.lastName} />
+			<input id="lastName" bind:value={user.lastName} disabled={!data.canManageUsers} />
 
 			<label for="address">Address</label>
-			<input id="address" bind:value={user.address} placeholder="123 Main St" />
+			<input
+				id="address"
+				bind:value={user.address}
+				placeholder="123 Main St"
+				disabled={!data.canManageUsers}
+			/>
 
 			<label for="personalEmail">Personal Email</label>
-			<input id="personalEmail" type="email" bind:value={user.personalEmail} />
+			<input
+				id="personalEmail"
+				type="email"
+				bind:value={user.personalEmail}
+				disabled={!data.canManageUsers}
+			/>
 
 			<label for="phone">Phone</label>
-			<input id="phone" bind:value={user.phone} />
+			<input id="phone" bind:value={user.phone} disabled={!data.canManageUsers} />
 
 			<label for="workEmail">Work Email</label>
-			<input id="workEmail" type="email" bind:value={user.workEmail} />
+			<input
+				id="workEmail"
+				type="email"
+				bind:value={user.workEmail}
+				disabled={!data.canManageUsers}
+			/>
 
 			<label for="tshirtSize">T-shirt Size</label>
-			<select id="tshirtSize" bind:value={user.tshirtSize}>
+			<select id="tshirtSize" bind:value={user.tshirtSize} disabled={!data.canManageUsers}>
 				<option value="">Select</option>
 				<option>S</option>
 				<option>M</option>
@@ -123,7 +141,7 @@
 			</select>
 
 			<label for="maskSize">Mask Size</label>
-			<select id="maskSize" bind:value={user.maskSize}>
+			<select id="maskSize" bind:value={user.maskSize} disabled={!data.canManageUsers}>
 				<option value="">Select</option>
 				<option>Small</option>
 				<option>Medium</option>
@@ -131,15 +149,22 @@
 			</select>
 
 			<label for="fitTestDate">Fit Test Date</label>
-			<input id="fitTestDate" type="date" bind:value={user.fitTestDate} />
+			<input
+				id="fitTestDate"
+				type="date"
+				bind:value={user.fitTestDate}
+				disabled={!data.canManageUsers}
+			/>
 
-			<button class="save-btn" type="button" on:click={save}>
-				Save Changes
-			</button>
+			{#if data.canManageUsers}
+				<button class="save-btn" type="button" on:click={save}>
+					Save Changes
+				</button>
 
-			<button class="delete-user" type="button" on:click={deleteUser}>
-				Delete User
-			</button>
+				<button class="delete-user" type="button" on:click={deleteUser}>
+					Delete User
+				</button>
+			{/if}
 		</div>
 
 		<hr />

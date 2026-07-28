@@ -5,7 +5,7 @@ import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as schema from './schema';
 
-const isProd = process.env.NODE_ENV === 'production';
+const isProd = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 const isBuild = process.env.BUILD_ENV === 'build';
 
 const LOCAL_DB = 'newhopefd.db';
@@ -38,8 +38,8 @@ export function getDB() {
 	// ❗ ONLY schema goes here — no migrations option!
 	dbInstance = drizzle(sqlite, { schema });
 
-	// Keep local dev DB schema in sync so auth tables exist before login.
-	if (!isBuild && !isProd) {
+	// Keep runtime DB schema in sync (prod + local dev) before handling requests.
+	if (!isBuild) {
 		migrate(dbInstance, { migrationsFolder: './migrations' });
 	}
 

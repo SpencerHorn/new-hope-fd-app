@@ -5,7 +5,7 @@
 
 <div class="app-shell">
 	{#if data.user}
-		<Sidebar />
+		<Sidebar appRole={data.appUser?.role ?? 'probationary'} />
 	{/if}
 
 	<main
