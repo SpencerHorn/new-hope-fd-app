@@ -1,10 +1,11 @@
 import type { PageServerLoad, Actions } from './$types';
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
+import { isAdministrator, isAppRole } from '$lib/auth/roles';
 import { fail } from '@sveltejs/kit';
 import { and, like } from 'drizzle-orm';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, locals }) => {
 	const db = await getDB();
 
 	const firstName = url.searchParams.get('firstName') ?? '';
@@ -29,19 +30,22 @@ export const load: PageServerLoad = async ({ url }) => {
 	const results = await query.all();
 
 	return {
-		users: results
+		users: results,
+		canManageRoles: isAdministrator(locals.appUser?.role)
 	};
 };
 
 export const actions: Actions = {
-	create: async ({ request }) => {
+	create: async ({ request, locals }) => {
 		const form = await request.formData();
 
 		const firstName = String(form.get('firstName') ?? '');
 		const lastName = String(form.get('lastName') ?? '');
 		const phone = String(form.get('phone') ?? '');
 		const personalEmail = String(form.get('personalEmail') ?? '');
-		const role = String(form.get('role') ?? 'probationary');
+		const requestedRole = String(form.get('role') ?? 'probationary');
+		const canManageRoles = isAdministrator(locals.appUser?.role);
+		const role = canManageRoles && isAppRole(requestedRole) ? requestedRole : 'probationary';
 
 		if (!firstName || !lastName || !personalEmail) {
 			return fail(400, { error: 'Missing required fields' });

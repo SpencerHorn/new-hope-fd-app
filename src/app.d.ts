@@ -5,6 +5,13 @@ declare global {
 		interface Locals {
 			user: import('lucia').User | null;
 			session: import('lucia').Session | null;
+			appUser?: {
+				id: number;
+				firstName: string;
+				lastName: string;
+				personalEmail: string;
+				role: string;
+			} | null;
 		}
 	}
 }

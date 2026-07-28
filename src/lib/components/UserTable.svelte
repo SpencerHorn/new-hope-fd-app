@@ -3,6 +3,7 @@
 	import UserChecklistModal from '$lib/components/UserChecklistModal.svelte';
 
 	export let users: any[] = [];
+	export let canManageRoles = false;
 
 	let showRosterModal = false;
 	let showChecklistModal = false;
@@ -146,11 +147,17 @@
 			<input name="phone" placeholder="Phone" bind:value={phone} />
 			<input name="personalEmail" placeholder="Personal email" bind:value={personalEmail} />
 
-			<select name="role">
-				<option value="probationary">Probationary</option>
-				<option value="volunteer">Volunteer</option>
-				<option value="employee">Employee</option>
-			</select>
+			{#if canManageRoles}
+				<select name="role">
+					<option value="probationary">Probationary</option>
+					<option value="volunteer">Volunteer</option>
+					<option value="employee">Employee</option>
+					<option value="administrator">Administrator</option>
+				</select>
+			{:else}
+				<input value="Probationary" disabled />
+				<input type="hidden" name="role" value="probationary" />
+			{/if}
 		</div>
 
 		{#if showMore}
@@ -209,17 +216,22 @@
 					<td>{u.phone}</td>
 					<td>{u.personalEmail}</td>
 					<td>
-						<select
-							class="role-pill"
-							value={u.role}
-							on:change={(e) =>
-								updateRole(u.id, (e.target as HTMLSelectElement).value)
-							}
-						>
-							<option value="probationary">Probationary</option>
-							<option value="volunteer">Volunteer</option>
-							<option value="employee">Employee</option>
-						</select>
+						{#if canManageRoles}
+							<select
+								class="role-pill"
+								value={u.role}
+								on:change={(e) =>
+									updateRole(u.id, (e.target as HTMLSelectElement).value)
+								}
+							>
+								<option value="probationary">Probationary</option>
+								<option value="volunteer">Volunteer</option>
+								<option value="employee">Employee</option>
+								<option value="administrator">Administrator</option>
+							</select>
+						{:else}
+							<span class="role-badge">{u.role}</span>
+						{/if}
 					</td>
 					<td>
 						<button class="link" on:click={() => openChecklistModal(u)}>
@@ -330,6 +342,15 @@
 		padding: 6px 12px;
 		font-weight: 600;
 		border: none;
+	}
+
+	.role-badge {
+		display: inline-block;
+		background: #f3f4f6;
+		border-radius: 999px;
+		padding: 6px 12px;
+		font-weight: 600;
+		text-transform: capitalize;
 	}
 
 	.delete {

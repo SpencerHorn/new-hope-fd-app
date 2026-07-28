@@ -3,4 +3,4 @@
 	export let data;
 </script>
 
-<UserTable users={data.users} />
+<UserTable users={data.users} canManageRoles={data.canManageRoles} />

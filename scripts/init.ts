@@ -1,12 +1,12 @@
 // scripts/init.ts
 import fs from 'fs';
-import { execSync } from 'child_process';
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { getDB } from '../src/lib/db/client';
 import { authUsers } from '../src/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { Argon2id } from 'oslo/password';
 
-const PROD = process.env.NODE_ENV === 'production';
+const PROD = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 
 async function ensureDirs() {
 	if (!PROD) return;
@@ -25,7 +25,8 @@ async function runMigrations() {
 	if (!PROD) return;
 
 	console.log('Running migrations...');
-	execSync('npm run db:migrate', { stdio: 'inherit' });
+	const db = await getDB();
+	migrate(db, { migrationsFolder: './migrations' });
 }
 
 async function seedAdminUser() {

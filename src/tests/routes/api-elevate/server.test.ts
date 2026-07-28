@@ -6,6 +6,21 @@ import { PATCH } from '../../../routes/api/elevate/[id]/+server';
 import { getDB } from '$lib/db/client';
 
 describe('api elevate', () => {
+	it('rejects non-admin users', async () => {
+		vi.mocked(getDB).mockReturnValue({} as any);
+		const req = new Request('http://localhost/api/elevate/1', {
+			method: 'PATCH',
+			body: JSON.stringify({ role: 'employee' })
+		});
+
+		const res = await PATCH({
+			params: { id: '1' },
+			request: req,
+			locals: { appUser: { role: 'volunteer' } }
+		} as any);
+		expect(res.status).toBe(403);
+	});
+
 	it('rejects invalid role', async () => {
 		vi.mocked(getDB).mockReturnValue({} as any);
 		const req = new Request('http://localhost/api/elevate/1', {
@@ -13,7 +28,11 @@ describe('api elevate', () => {
 			body: JSON.stringify({ role: 'chief' })
 		});
 
-		const res = await PATCH({ params: { id: '1' }, request: req } as any);
+		const res = await PATCH({
+			params: { id: '1' },
+			request: req,
+			locals: { appUser: { role: 'administrator' } }
+		} as any);
 		expect(res.status).toBe(400);
 	});
 
@@ -32,7 +51,11 @@ describe('api elevate', () => {
 			method: 'PATCH',
 			body: JSON.stringify({ role: 'volunteer' })
 		});
-		const res = await PATCH({ params: { id: '1' }, request: req } as any);
+		const res = await PATCH({
+			params: { id: '1' },
+			request: req,
+			locals: { appUser: { role: 'administrator' } }
+		} as any);
 		expect(res.status).toBe(200);
 		await expect(res.json()).resolves.toMatchObject({ role: 'volunteer' });
 	});
