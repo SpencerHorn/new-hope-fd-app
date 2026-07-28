@@ -28,6 +28,8 @@
 			{/if}
 		</form>
 
+		<a href="/signup" class="create-account-btn">Create Account</a>
+
 		<p class="switch-auth">
 			Need an account?
 			<a href="/signup">Sign up</a>
@@ -106,6 +108,23 @@
 
 	button:hover {
 		background: #006edc;
+	}
+
+	.create-account-btn {
+		display: inline-block;
+		margin-top: 1rem;
+		padding: 0.75rem 1rem;
+		width: 50%;
+		border-radius: 12px;
+		border: 1px solid #0a84ff;
+		color: #0a84ff;
+		font-weight: 600;
+		text-decoration: none;
+		background: #ffffff;
+	}
+
+	.create-account-btn:hover {
+		background: #f0f7ff;
 	}
 
 	/* Error message */
