@@ -9,8 +9,9 @@ export const handle = async ({ event, resolve }) => {
 	event.locals.session = session;
 
 	const url = event.url.pathname;
+	const isPublicInviteRoute = url.startsWith('/invite') || url.startsWith('/api/invite');
 
-	if (!user && url !== '/login' && !url.startsWith('/invite')) {
+	if (!user && url !== '/login' && !isPublicInviteRoute) {
 		throw redirect(302, '/login');
 	}
 

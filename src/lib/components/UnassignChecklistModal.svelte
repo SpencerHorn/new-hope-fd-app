@@ -68,7 +68,8 @@
 	}
 </script>
 
-<div class="backdrop" on:click={() => dispatch('close')} />
+<button class="backdrop" type="button" aria-label="Close modal" on:click={() => dispatch('close')}
+></button>
 
 <div class="modal">
 	<header>
@@ -125,6 +126,8 @@
 <style>
 	/* matches Assign modal styling */
 	.backdrop {
+		border: none;
+		padding: 0;
 		position: fixed;
 		inset: 0;
 		background: rgba(0, 0, 0, 0.35);

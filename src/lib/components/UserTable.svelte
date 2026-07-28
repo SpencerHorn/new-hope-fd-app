@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import RosterModal from '$lib/components/RosterModal.svelte';
 	import UserChecklistModal from '$lib/components/UserChecklistModal.svelte';
 
@@ -203,10 +202,7 @@
 			{#each filteredUsers as u}
 				<tr>
 					<td>
-						<a
-							class="user-link"
-							on:click={() => goto(`/users/${u.id}`)}
-						>
+						<a class="user-link" href={`/users/${u.id}`}>
 							{u.lastName}, {u.firstName}
 						</a>
 					</td>
@@ -296,14 +292,6 @@
 		cursor: pointer;
 	}
 
-	button.secondary {
-		background: #f3f4f6;
-		border-radius: 14px;
-		border: 1px solid #d1d5db;
-		padding: 12px;
-		cursor: pointer;
-	}
-
 	button.link {
 		background: none;
 		border: none;
@@ -321,11 +309,6 @@
 		margin-bottom: 12px;
 		gap: 12px;
 		flex-wrap: wrap;
-	}
-
-	.table-controls {
-		display: flex;
-		gap: 10px;
 	}
 
 	table {
@@ -349,14 +332,6 @@
 		border: none;
 	}
 
-	.sort-btn {
-		background: #f3f4f6;
-		border: 1px solid #d1d5db;
-		border-radius: 10px;
-		padding: 8px 12px;
-		cursor: pointer;
-	}
-
 	.delete {
 		background: none;
 		border: none;
@@ -366,11 +341,11 @@
 	}
 
 	.table-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 12px;
-}
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 12px;
+	}
 
 .print-roster {
 	background: none;

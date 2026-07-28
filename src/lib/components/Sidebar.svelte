@@ -12,8 +12,8 @@
 
 		<nav class="nav">
 			<button
-				class:selected={$page.url.pathname === '/'}
-				on:click={() => goto('/')}
+				class:selected={$page.url.pathname.startsWith('/dashboard')}
+				on:click={() => goto('/dashboard')}
 			>
 				Dashboard
 			</button>

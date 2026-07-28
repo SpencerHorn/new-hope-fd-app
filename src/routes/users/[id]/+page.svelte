@@ -2,14 +2,19 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { printChecklist } from '$lib/utils/printChecklist';
+	import type { PageData } from './$types';
 
-	export let data;
+	export let data: PageData;
 
-	let user = structuredClone(data.user);
+	type UserRecord = NonNullable<PageData['user']>;
+
+	let user: UserRecord | null = structuredClone(data.user);
 	let checklists: any[] = [];
 	let loadingChecklists = true;
 
 	async function save() {
+		if (!user) return;
+
 		const res = await fetch(`/api/users/${user.id}`, {
 			method: 'PATCH',
 			headers: { 'Content-Type': 'application/json' },
@@ -24,6 +29,7 @@
 	}
 
 	async function deleteUser() {
+		if (!data.user) return;
 		if (!confirm('Delete this user? This cannot be undone.')) return;
 
 		const res = await fetch(`/api/users/${data.user.id}`, {
@@ -41,6 +47,11 @@
 	// Checklist logic
 	// ----------------------------
 	onMount(async () => {
+		if (!user) {
+			loadingChecklists = false;
+			return;
+		}
+
 		const res = await fetch(`/api/users/${user.id}/checklists`);
 		checklists = res.ok ? await res.json() : [];
 		loadingChecklists = false;
@@ -74,121 +85,125 @@
 </script>
 
 <main class="user-details">
-
-	<!-- ================= USER FORM ================= -->
-	<h1>Edit User</h1>
-
-	<div class="form-section">
-		<label>First Name</label>
-		<input bind:value={user.firstName} />
-
-		<label>Last Name</label>
-		<input bind:value={user.lastName} />
-
-		<label>Address</label>
-		<input bind:value={user.address} placeholder="123 Main St" />
-
-		<label>Personal Email</label>
-		<input type="email" bind:value={user.personalEmail} />
-
-		<label>Phone</label>
-		<input bind:value={user.phone} />
-
-		<label>Work Email</label>
-		<input type="email" bind:value={user.workEmail} />
-
-		<label>T-shirt Size</label>
-		<select bind:value={user.tshirtSize}>
-			<option value="">Select</option>
-			<option>S</option>
-			<option>M</option>
-			<option>L</option>
-			<option>XL</option>
-			<option>2XL</option>
-			<option>3XL</option>
-		</select>
-
-		<label>Mask Size</label>
-		<select bind:value={user.maskSize}>
-			<option value="">Select</option>
-			<option>Small</option>
-			<option>Medium</option>
-			<option>Large</option>
-		</select>
-
-		<label>Fit Test Date</label>
-		<input type="date" bind:value={user.fitTestDate} />
-
-		<button class="save-btn" on:click={save}>
-			Save Changes
-		</button>
-
-		<button class="delete-user" on:click={deleteUser}>
-			Delete User
-		</button>
-	</div>
-
-	<hr />
-
-	<!-- ================= CHECKLISTS ================= -->
-	<h2>Assigned Checklists</h2>
-
-	{#if loadingChecklists}
-		<p class="muted">Loading checklists…</p>
-	{:else if checklists.length === 0}
-		<p class="muted">No checklists assigned to this user.</p>
+	{#if !user}
+		<h1>User Not Found</h1>
+		<p class="muted">The requested user record could not be loaded.</p>
 	{:else}
-		{#each checklists as checklist}
-			<div class="checklist-card">
-				<div class="checklist-header">
-					<h3>{checklist.name}</h3>
+		<!-- ================= USER FORM ================= -->
+		<h1>Edit User</h1>
 
-					<button
-						class="print-btn"
-						on:click={() =>
-							printChecklist({
-								userName: `${user.lastName}, ${user.firstName}`,
-								checklistName: checklist.name,
-								items: checklist.items
-							})
-						}
-					>
-						Print Checklist
-					</button>
-				</div>
+		<div class="form-section">
+			<label for="firstName">First Name</label>
+			<input id="firstName" bind:value={user.firstName} />
 
-				<table>
-					<thead>
-						<tr>
-							<th>#</th>
-							<th>Task</th>
-							<th>Done</th>
-							<th>Date</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each checklist.items as item}
-							<tr class:completed={item.completed}>
-								<td>{item.number}</td>
-								<td>{item.taskName}</td>
-								<td>
-									<input
-										type="checkbox"
-										checked={item.completed}
-										on:change={() => toggleItem(item)}
-									/>
-								</td>
-								<td>
-									{item.dateCompleted
-										? new Date(item.dateCompleted).toLocaleDateString()
-										: '—'}
-								</td>
+			<label for="lastName">Last Name</label>
+			<input id="lastName" bind:value={user.lastName} />
+
+			<label for="address">Address</label>
+			<input id="address" bind:value={user.address} placeholder="123 Main St" />
+
+			<label for="personalEmail">Personal Email</label>
+			<input id="personalEmail" type="email" bind:value={user.personalEmail} />
+
+			<label for="phone">Phone</label>
+			<input id="phone" bind:value={user.phone} />
+
+			<label for="workEmail">Work Email</label>
+			<input id="workEmail" type="email" bind:value={user.workEmail} />
+
+			<label for="tshirtSize">T-shirt Size</label>
+			<select id="tshirtSize" bind:value={user.tshirtSize}>
+				<option value="">Select</option>
+				<option>S</option>
+				<option>M</option>
+				<option>L</option>
+				<option>XL</option>
+				<option>2XL</option>
+				<option>3XL</option>
+			</select>
+
+			<label for="maskSize">Mask Size</label>
+			<select id="maskSize" bind:value={user.maskSize}>
+				<option value="">Select</option>
+				<option>Small</option>
+				<option>Medium</option>
+				<option>Large</option>
+			</select>
+
+			<label for="fitTestDate">Fit Test Date</label>
+			<input id="fitTestDate" type="date" bind:value={user.fitTestDate} />
+
+			<button class="save-btn" type="button" on:click={save}>
+				Save Changes
+			</button>
+
+			<button class="delete-user" type="button" on:click={deleteUser}>
+				Delete User
+			</button>
+		</div>
+
+		<hr />
+
+		<!-- ================= CHECKLISTS ================= -->
+		<h2>Assigned Checklists</h2>
+
+		{#if loadingChecklists}
+			<p class="muted">Loading checklists…</p>
+		{:else if checklists.length === 0}
+			<p class="muted">No checklists assigned to this user.</p>
+		{:else}
+			{#each checklists as checklist}
+				<div class="checklist-card">
+					<div class="checklist-header">
+						<h3>{checklist.name}</h3>
+
+						<button
+							class="print-btn"
+							on:click={() =>
+								printChecklist({
+									userName: `${user.lastName}, ${user.firstName}`,
+									checklistName: checklist.name,
+									items: checklist.items
+								})
+							}
+						>
+							Print Checklist
+						</button>
+					</div>
+
+					<table>
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Task</th>
+								<th>Done</th>
+								<th>Date</th>
 							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		{/each}
+						</thead>
+						<tbody>
+							{#each checklist.items as item}
+								<tr class:completed={item.completed}>
+									<td>{item.number}</td>
+									<td>{item.taskName}</td>
+									<td>
+										<input
+											type="checkbox"
+											checked={item.completed}
+											on:change={() => toggleItem(item)}
+										/>
+									</td>
+									<td>
+										{item.dateCompleted
+											? new Date(item.dateCompleted).toLocaleDateString()
+											: '—'}
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{/each}
+		{/if}
 	{/if}
 
 </main>
@@ -274,22 +289,22 @@
 	}
 
 	.checklist-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
 
-.print-btn {
-	background: none;
-	border: none;
-	color: #2563eb;
-	font-weight: 600;
-	cursor: pointer;
-	padding: 0;
-}
+	.print-btn {
+		background: none;
+		border: none;
+		color: #2563eb;
+		font-weight: 600;
+		cursor: pointer;
+		padding: 0;
+	}
 
-.print-btn:hover {
-	text-decoration: underline;
-}
+	.print-btn:hover {
+		text-decoration: underline;
+	}
 
 </style>

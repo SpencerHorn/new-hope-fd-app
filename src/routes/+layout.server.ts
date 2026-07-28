@@ -2,13 +2,14 @@
 import { redirect } from '@sveltejs/kit';
 
 export const load = async ({ locals, url }) => {
-	// Redirect unauthenticated users → login
-	if (!locals.user && url.pathname !== '/login') {
+	const isPublicInviteRoute = url.pathname.startsWith('/invite');
+
+	// Redirect unauthenticated users -> login
+	if (!locals.user && url.pathname !== '/login' && !isPublicInviteRoute) {
 		throw redirect(302, '/login');
 	}
 
 	return {
-		user: locals.user,
-		url
+		user: locals.user
 	};
 };
