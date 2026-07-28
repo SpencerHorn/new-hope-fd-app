@@ -11,6 +11,7 @@ export const GET = async () => {
 			lastName: users.lastName,
 			firstName: users.firstName,
 			phone: users.phone,
+			personalEmail: users.personalEmail,
 			workEmail: users.workEmail,
 			role: users.role
 		})
