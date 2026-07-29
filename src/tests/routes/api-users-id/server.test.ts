@@ -30,7 +30,7 @@ describe('api users/[id]', () => {
 		expect(whereMock).toHaveBeenCalled();
 	});
 
-	it('PATCH rejects non-admin users', async () => {
+	it('PATCH rejects non-admin users editing another profile', async () => {
 		const req = new Request('http://localhost/api/users/1', {
 			method: 'PATCH',
 			body: JSON.stringify({ firstName: 'A' })
@@ -38,10 +38,36 @@ describe('api users/[id]', () => {
 		const res = await PATCH({
 			params: { id: '1' },
 			request: req,
-			locals: { appUser: { role: 'volunteer' } }
+			locals: { appUser: { role: 'volunteer', id: 2 } }
 		} as any);
 
 		expect(res.status).toBe(403);
+	});
+
+	it('PATCH allows users to update their own profile', async () => {
+		const whereMock = vi.fn(async () => undefined);
+		const setMock = vi.fn(() => ({ where: whereMock }));
+		vi.mocked(getDB).mockResolvedValue({
+			update: () => ({ set: setMock })
+		} as any);
+
+		const req = new Request('http://localhost/api/users/3', {
+			method: 'PATCH',
+			body: JSON.stringify({
+				firstName: 'A',
+				lastName: 'B',
+				personalEmail: 'a@b.com',
+				phone: '(111) 222-3333'
+			})
+		});
+		const res = await PATCH({
+			params: { id: '3' },
+			request: req,
+			locals: { appUser: { role: 'volunteer', id: 3 } }
+		} as any);
+
+		expect(res.status).toBe(204);
+		expect(setMock).toHaveBeenCalled();
 	});
 
 	it('PATCH validates id', async () => {

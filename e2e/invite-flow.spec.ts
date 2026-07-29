@@ -34,7 +34,7 @@ test('create invite and complete signup from invite link', async ({ page, contex
 	await page.getByRole('button', { name: 'Create Account' }).click();
 
 	await expect(page).toHaveURL(/\/dashboard$/);
-	await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+	await expect(page.getByRole('heading', { name: /Dashboard/ })).toBeVisible();
 
 	await page.locator('form[action="/logout"] button').click();
 	await expect(page).toHaveURL(/\/login$/);

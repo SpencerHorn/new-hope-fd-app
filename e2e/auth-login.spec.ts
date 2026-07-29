@@ -14,5 +14,5 @@ test('logs in seeded admin and lands on dashboard', async ({ page }) => {
 	await page.getByRole('button', { name: 'Sign In' }).click();
 
 	await expect(page).toHaveURL(/\/dashboard$/);
-	await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'My Dashboard' })).toBeVisible();
 });
