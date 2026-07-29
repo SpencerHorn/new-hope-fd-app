@@ -1,9 +1,7 @@
 const VERSION_KEY = 'nhfdToolsRosterVersion';
-const STORAGE_KEY = 'nhfdToolsRoster';
 const AUTO_PRINT = new URLSearchParams(window.location.search).get('autoprint') === '1';
 
 let roster = [];
-let baseRoster = [];
 
 function loadVersion() {
   const saved = localStorage.getItem(VERSION_KEY);
@@ -35,46 +33,11 @@ async function fetchRosterFromDatabase() {
 
 async function loadRoster() {
   try {
-    baseRoster = await fetchRosterFromDatabase();
+    return await fetchRosterFromDatabase();
   } catch (err) {
     console.error(err);
-    baseRoster = [];
+    return [];
   }
-
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        if (baseRoster.length === 0) {
-          return parsed;
-        }
-
-        const merged = [...baseRoster];
-        const existingKeys = new Set(
-          merged.map((row) => `${String(row.last).toLowerCase()}|${String(row.first).toLowerCase()}`)
-        );
-
-        for (const row of parsed) {
-          const key = `${String(row.last).toLowerCase()}|${String(row.first).toLowerCase()}`;
-          if (!existingKeys.has(key)) {
-            merged.push(row);
-            existingKeys.add(key);
-          }
-        }
-
-        return merged;
-      }
-    } catch (err) {
-      console.error('Error parsing saved roster:', err);
-    }
-  }
-
-  return [...baseRoster];
-}
-
-function saveRosterToStorage() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(roster));
 }
 
 function sortRoster() {
@@ -145,28 +108,7 @@ function renderVolunteers() {
 function createNameCell(member) {
   const cell = document.createElement('td');
   cell.className = 'name-cell';
-
-  const container = document.createElement('div');
-  container.style.display = 'flex';
-  container.style.justifyContent = 'space-between';
-  container.style.alignItems = 'center';
-
-  const nameSpan = document.createElement('span');
-  nameSpan.textContent = `${member.number}. ${member.last}, ${member.first}`;
-  container.appendChild(nameSpan);
-
-  const deleteBtn = document.createElement('button');
-  deleteBtn.type = 'button';
-  deleteBtn.className = 'delete-btn';
-  deleteBtn.textContent = 'x';
-  deleteBtn.title = `Remove ${member.last}, ${member.first}`;
-  deleteBtn.onclick = function (e) {
-    e.stopPropagation();
-    removeVolunteer(member);
-  };
-  container.appendChild(deleteBtn);
-
-  cell.appendChild(container);
+  cell.textContent = `${member.number}. ${member.last}, ${member.first}`;
   return cell;
 }
 
@@ -195,71 +137,11 @@ function createEmptyCell() {
   return document.createElement('td');
 }
 
-function addVolunteer() {
-  const lastInput = document.getElementById('lastName');
-  const firstInput = document.getElementById('firstName');
-  const phoneInput = document.getElementById('phone');
-  const emailInput = document.getElementById('email');
-
-  const last = lastInput.value.trim();
-  const first = firstInput.value.trim();
-  const phone = phoneInput.value.trim();
-  const email = emailInput.value.trim();
-
-  if (!last || !first) {
-    alert('Please enter both Last Name and First Name.');
-    return;
-  }
-
-  const exists = roster.some(
-    (row) => row.last.toLowerCase() === last.toLowerCase() && row.first.toLowerCase() === first.toLowerCase()
-  );
-  if (exists) {
-    alert('Member already exists in roster.');
-    return;
-  }
-
-  roster.push({ last, first, phone, email });
-  sortRoster();
-  saveRosterToStorage();
-  renderVolunteers();
-
-  lastInput.value = '';
-  firstInput.value = '';
-  phoneInput.value = '';
-  emailInput.value = '';
-}
-
-function removeVolunteer(member) {
-  if (confirm(`Remove ${member.last}, ${member.first} from roster?`)) {
-    roster = roster.filter(
-      (row) =>
-        !(row.last === member.last && row.first === member.first && row.phone === member.phone && row.email === member.email)
-    );
-    saveRosterToStorage();
-    renderVolunteers();
-  }
-}
-
-function saveRoster() {
-  saveRosterToStorage();
-  alert(`Roster saved! Current count: ${roster.length} members.`);
-}
-
-function resetToOriginal() {
-  if (confirm('Reset to the database roster? This will remove any added members.')) {
-    roster = baseRoster.map((row) => ({ ...row }));
-    saveRosterToStorage();
-    renderVolunteers();
-  }
-}
-
 function clearForm() {
-  if (confirm('Clear the add-member form fields?')) {
-    document.getElementById('lastName').value = '';
-    document.getElementById('firstName').value = '';
-    document.getElementById('phone').value = '';
-    document.getElementById('email').value = '';
+  if (confirm('Clear the version field?')) {
+    const versionField = document.getElementById('versionField');
+    versionField.value = '';
+    saveVersion();
   }
 }
 
@@ -298,7 +180,7 @@ async function exportToPDF() {
     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait', compress: true }
   };
 
-  const controls = document.querySelectorAll('.volunteer-management, .management-controls, .pdf-export, .delete-btn');
+  const controls = document.querySelectorAll('.pdf-export');
   const originalDisplay = [];
   controls.forEach((control) => {
     originalDisplay.push(control.style.display);

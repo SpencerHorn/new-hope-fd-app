@@ -5,7 +5,6 @@
 
 	export let appRole = 'probationary';
 	let toolsOpen = false;
-	let legacyOpen = false;
 	$: canManageRoles = isAdministrator(appRole);
 	$: canSeeChecklists = canViewChecklists(appRole);
 </script>
@@ -61,17 +60,6 @@
 				</button>
 			{/if}
 
-			<button on:click={() => (legacyOpen = !legacyOpen)}>
-				Legacy Apps ▸
-			</button>
-
-			{#if legacyOpen}
-				<div class="legacy">
-					<a href="/NHFD_Admin.html" target="_blank">Admin</a>
-					<a href="/NHFD_Training.html" target="_blank">Training</a>
-					<a href="/NHFD_Roster.html" target="_blank">Roster</a>
-				</div>
-			{/if}
 		</nav>
 	</div>
 
@@ -149,12 +137,6 @@
 		font-size: 14px;
 		padding: 8px 10px;
 		background: #eef2ff;
-	}
-
-	.legacy a {
-		font-size: 14px;
-		text-decoration: none;
-		color: #374151;
 	}
 
 	.sidebar-bottom {
