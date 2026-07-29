@@ -5,6 +5,11 @@ import { users } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { isAdministrator } from '$lib/auth/roles';
 import { DEFAULT_ADMIN_EMAIL } from '$lib/server/adminSeed';
+import {
+	findExistingUserByEmailOrPhone,
+	formatPhone,
+	normalizePersonalEmail
+} from '$lib/server/user-conflicts';
 
 // GET /api/users
 export const GET: RequestHandler = async ({ locals }) => {
@@ -30,26 +35,27 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	const db = await getDB();
 	const data = await request.json();
+	const personalEmail = normalizePersonalEmail(String(data.personalEmail ?? ''));
+	const formattedPhone = formatPhone(String(data.phone ?? ''));
 
 	// Ensure required fields
-	if (!data.firstName || !data.lastName || !data.personalEmail || !data.phone) {
+	if (!data.firstName || !data.lastName || !personalEmail || !formattedPhone) {
 		return json({ message: 'Missing required fields' }, { status: 400 });
 	}
 
-	// Prevent duplicate phone numbers
-	const existing = db.select().from(users).where(eq(users.phone, data.phone)).get();
+	const existing = await findExistingUserByEmailOrPhone(db, personalEmail, formattedPhone);
 
 	if (existing) {
-		return json({ message: 'A user with this phone number already exists.' }, { status: 400 });
+		return json({ message: 'A user with that email or phone already exists.' }, { status: 400 });
 	}
 
-	const inserted = db
+	const inserted = await db
 		.insert(users)
 		.values({
 			firstName: data.firstName,
 			lastName: data.lastName,
-			personalEmail: data.personalEmail,
-			phone: data.phone,
+			personalEmail,
+			phone: formattedPhone,
 			role: 'probationary'
 		})
 		.returning()

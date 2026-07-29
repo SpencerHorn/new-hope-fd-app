@@ -2,10 +2,13 @@ import { fail, redirect } from '@sveltejs/kit';
 import { getLucia } from '$lib/server/auth';
 import { getDB } from '$lib/db/client';
 import { authUsers, users } from '$lib/db/schema';
-import { eq, or } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { Argon2id } from 'oslo/password';
-
-const PHONE_DIGIT_COUNT = 10;
+import {
+	findExistingUserByEmailOrPhone,
+	formatPhone,
+	normalizePersonalEmail
+} from '$lib/server/user-conflicts';
 
 function normalizeName(value: string): string {
 	return value
@@ -14,18 +17,12 @@ function normalizeName(value: string): string {
 		.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function formatPhone(raw: string): string | null {
-	const digits = raw.replace(/\D/g, '');
-	if (digits.length !== PHONE_DIGIT_COUNT) return null;
-	return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-}
-
 export const actions = {
 	default: async ({ request, cookies }) => {
 		const form = await request.formData();
 		const firstNameRaw = String(form.get('firstName') ?? '').trim();
 		const lastNameRaw = String(form.get('lastName') ?? '').trim();
-		const email = String(form.get('email') ?? '').trim().toLowerCase();
+		const email = normalizePersonalEmail(String(form.get('email') ?? ''));
 		const phoneRaw = String(form.get('phone') ?? '');
 		const password = String(form.get('password') ?? '');
 		const confirm = String(form.get('confirm') ?? '');
@@ -63,11 +60,7 @@ export const actions = {
 			return fail(400, { message: 'An account with that email already exists.', values });
 		}
 
-		const existingProfile = await db
-			.select({ id: users.id })
-			.from(users)
-			.where(or(eq(users.personalEmail, email), eq(users.phone, phone)))
-			.get();
+		const existingProfile = await findExistingUserByEmailOrPhone(db, email, phone);
 		if (existingProfile) {
 			return fail(400, {
 				message: 'A member profile with that email or phone already exists. Please contact an administrator.',

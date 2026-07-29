@@ -68,6 +68,9 @@ describe('users page server', () => {
 	it('create action allows admin users', async () => {
 		const valuesMock = vi.fn(() => undefined);
 		vi.mocked(getDB).mockResolvedValue({
+			select: () => ({
+				from: () => ({ where: () => ({ get: async () => undefined }) })
+			}),
 			insert: () => ({ values: valuesMock })
 		} as any);
 
@@ -83,7 +86,27 @@ describe('users page server', () => {
 
 		expect(result).toEqual({ success: true });
 		expect(valuesMock).toHaveBeenCalledWith(
-			expect.objectContaining({ role: 'employee', personalEmail: 'a@b.com' })
+			expect.objectContaining({ role: 'employee', personalEmail: 'a@b.com', phone: '(111) 222-3333' })
 		);
+	});
+
+	it('create action rejects duplicate email or phone', async () => {
+		vi.mocked(getDB).mockResolvedValue({
+			select: () => ({
+				from: () => ({ where: () => ({ get: async () => ({ id: 9 }) }) })
+			})
+		} as any);
+
+		const result = await actions.create(
+			makeCreateEvent('administrator', {
+				firstName: 'A',
+				lastName: 'B',
+				personalEmail: 'a@b.com',
+				phone: '(111) 222-3333',
+				role: 'employee'
+			})
+		);
+
+		expect(result).toMatchObject({ status: 400, data: { error: 'A user with that email or phone already exists.' } });
 	});
 });

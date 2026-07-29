@@ -5,6 +5,11 @@ import { isAdministrator, isAppRole } from '$lib/auth/roles';
 import { DEFAULT_ADMIN_EMAIL } from '$lib/server/adminSeed';
 import { fail } from '@sveltejs/kit';
 import { and, eq, like } from 'drizzle-orm';
+import {
+	findExistingUserByEmailOrPhone,
+	formatPhone,
+	normalizePersonalEmail
+} from '$lib/server/user-conflicts';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const db = await getDB();
@@ -64,7 +69,7 @@ export const actions: Actions = {
 		const firstName = String(form.get('firstName') ?? '');
 		const lastName = String(form.get('lastName') ?? '');
 		const phone = String(form.get('phone') ?? '');
-		const personalEmail = String(form.get('personalEmail') ?? '');
+		const personalEmail = normalizePersonalEmail(String(form.get('personalEmail') ?? ''));
 		const requestedRole = String(form.get('role') ?? 'probationary');
 		const canManageRoles = isAdministrator(locals.appUser?.role);
 		const role = canManageRoles && isAppRole(requestedRole) ? requestedRole : 'probationary';
@@ -73,12 +78,21 @@ export const actions: Actions = {
 			return fail(400, { error: 'Missing required fields' });
 		}
 
+		const formattedPhone = formatPhone(phone);
+		if (!formattedPhone) {
+			return fail(400, { error: 'Phone number must contain exactly 10 digits.' });
+		}
+
 		const db = await getDB();
+		const existingProfile = await findExistingUserByEmailOrPhone(db, personalEmail, formattedPhone);
+		if (existingProfile) {
+			return fail(400, { error: 'A user with that email or phone already exists.' });
+		}
 
 		await db.insert(users).values({
 			firstName,
 			lastName,
-			phone,
+			phone: formattedPhone,
 			personalEmail,
 			role
 		});
