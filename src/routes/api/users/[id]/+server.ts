@@ -16,13 +16,16 @@ export async function DELETE({ params, locals }) {
 }
 
 export async function PATCH({ params, request, locals }) {
-	if (!isAdministrator(locals?.appUser?.role)) {
-		return new Response('Forbidden', { status: 403 });
-	}
-
 	const id = Number(params.id);
 	if (!id) {
 		return new Response('Invalid user id', { status: 400 });
+	}
+
+	const isAdmin = isAdministrator(locals?.appUser?.role);
+	const isSelf = locals?.appUser?.id === id;
+
+	if (!isAdmin && !isSelf) {
+		return new Response('Forbidden', { status: 403 });
 	}
 
 	const payload = await request.json();

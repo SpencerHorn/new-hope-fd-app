@@ -16,5 +16,5 @@ test('dashboard button routes to dashboard page', async ({ page }) => {
 
 	await page.getByRole('button', { name: 'Dashboard' }).click();
 	await expect(page).toHaveURL(/\/dashboard$/);
-	await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'My Dashboard' })).toBeVisible();
 });

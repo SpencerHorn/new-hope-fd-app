@@ -7,6 +7,7 @@ import {
 	checklistItems
 } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { isAdministrator } from '$lib/auth/roles';
 
 export const GET = async ({ params, locals }) => {
 	const db = await getDB();
@@ -16,7 +17,8 @@ export const GET = async ({ params, locals }) => {
 		return json({ error: 'Invalid user id' }, { status: 400 });
 	}
 
-	if (locals?.appUser?.role === 'probationary' && locals?.appUser?.id !== userId) {
+	const isAdmin = isAdministrator(locals?.appUser?.role);
+	if (!isAdmin && locals?.appUser?.id !== userId) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
 
@@ -30,21 +32,12 @@ export const GET = async ({ params, locals }) => {
 			taskName: checklistItems.taskName,
 			completed: userChecklistItems.completed,
 			dateCompleted: userChecklistItems.dateCompleted,
-            userChecklistItemId: userChecklistItems.id,
+			userChecklistItemId: userChecklistItems.id
 		})
 		.from(userChecklists)
-		.innerJoin(
-			checklists,
-			eq(userChecklists.checklistId, checklists.id)
-		)
-		.innerJoin(
-			userChecklistItems,
-			eq(userChecklistItems.userChecklistId, userChecklists.id)
-		)
-		.innerJoin(
-			checklistItems,
-			eq(userChecklistItems.checklistItemId, checklistItems.id)
-		)
+		.innerJoin(checklists, eq(userChecklists.checklistId, checklists.id))
+		.innerJoin(userChecklistItems, eq(userChecklistItems.userChecklistId, userChecklists.id))
+		.innerJoin(checklistItems, eq(userChecklistItems.checklistItemId, checklistItems.id))
 		.where(eq(userChecklists.userId, userId))
 		.orderBy(checklistItems.itemNumber)
 		.all();
@@ -63,13 +56,12 @@ export const GET = async ({ params, locals }) => {
 		}
 
 		grouped[row.userChecklistId].items.push({
-            userChecklistItemId: row.userChecklistItemId,
-            number: row.itemNumber,
-            taskName: row.taskName,
-            completed: !!row.completed,
-            dateCompleted: row.dateCompleted
-        });
-
+			userChecklistItemId: row.userChecklistItemId,
+			number: row.itemNumber,
+			taskName: row.taskName,
+			completed: !!row.completed,
+			dateCompleted: row.dateCompleted
+		});
 	}
 
 	return json(Object.values(grouped));

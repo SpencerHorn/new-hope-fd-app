@@ -6,12 +6,12 @@ import { load } from '../../../routes/users/[id]/+page.server';
 import { getDB } from '$lib/db/client';
 
 describe('users/[id] page server', () => {
-	it('blocks probationary users from viewing another user', async () => {
+	it('blocks non-admin users from viewing another user', async () => {
 		vi.mocked(getDB).mockResolvedValue({} as any);
 
 		const result = await load({
 			params: { id: '2' },
-			locals: { appUser: { role: 'probationary', id: 1 } }
+			locals: { appUser: { role: 'volunteer', id: 1 } }
 		} as any);
 
 		expect(result).toMatchObject({

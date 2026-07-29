@@ -7,10 +7,9 @@ import { eq } from 'drizzle-orm';
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const db = await getDB();
 	const requestedUserId = Number(params.id);
-	const isProbationary = locals.appUser?.role === 'probationary';
 	const isAdmin = isAdministrator(locals.appUser?.role);
 
-	if (isProbationary && locals.appUser?.id !== requestedUserId) {
+	if (!isAdmin && locals.appUser?.id !== requestedUserId) {
 		return {
 			user: null,
 			error: 'User not found',
