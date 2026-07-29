@@ -144,4 +144,19 @@
 	.switch-auth a:hover {
 		text-decoration: underline;
 	}
+
+	@media (max-width: 640px) {
+		.signup-card {
+			padding: 1.25rem;
+			border-radius: 14px;
+		}
+
+		.signup-logo {
+			width: min(72vw, 210px);
+		}
+
+		h2 {
+			font-size: 1.2rem;
+		}
+	}
 </style>

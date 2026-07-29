@@ -74,49 +74,51 @@
 	{:else if checklists.length === 0}
 		<p class="muted">No checklists created yet.</p>
 	{:else}
-		<table>
-			<thead>
-				<tr>
-					<th>Name</th>
-					<th>Items</th>
-					<th>Assigned</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each checklists as checklist}
+		<div class="table-wrap">
+			<table>
+				<thead>
 					<tr>
-						<td>{checklist.name}</td>
-						<td>{checklist.itemCount}</td>
-						<td>
-                            <button
-                                class="link"
-                                on:click={() => {
-                                    selectedChecklist = checklist;
-                                    showAssignedModal = true;
-                                }}
-                            >
-                                {checklist.assignedCount ?? 0}
-                            </button>
-                        </td>
-						<td class="actions">
-							<button class="link" on:click={() => openAssign(checklist)}>
-								Assign
-							</button>
-							<button class="link danger" on:click={() => openUnassign(checklist)}>
-								Unassign
-							</button>
-							<button class="link" on:click={() => openEdit(checklist)}>
-								Edit
-							</button>
-							<button class="danger" on:click={() => deleteChecklist(checklist)}>
-								Delete
-							</button>
-						</td>
+						<th>Name</th>
+						<th>Items</th>
+						<th>Assigned</th>
+						<th></th>
 					</tr>
-				{/each}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{#each checklists as checklist}
+						<tr>
+							<td>{checklist.name}</td>
+							<td>{checklist.itemCount}</td>
+							<td>
+								<button
+									class="link"
+									on:click={() => {
+										selectedChecklist = checklist;
+										showAssignedModal = true;
+									}}
+								>
+									{checklist.assignedCount ?? 0}
+								</button>
+							</td>
+							<td class="actions">
+								<button class="link" on:click={() => openAssign(checklist)}>
+									Assign
+								</button>
+								<button class="link danger" on:click={() => openUnassign(checklist)}>
+									Unassign
+								</button>
+								<button class="link" on:click={() => openEdit(checklist)}>
+									Edit
+								</button>
+								<button class="danger" on:click={() => deleteChecklist(checklist)}>
+									Delete
+								</button>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	{/if}
 </section>
 
@@ -184,6 +186,8 @@
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: 12px;
+		gap: 10px;
+		flex-wrap: wrap;
 	}
 
 	.primary {
@@ -205,6 +209,12 @@
 		width: 100%;
 		border-collapse: collapse;
 		margin-top: 16px;
+		min-width: 660px;
+	}
+
+	.table-wrap {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	th,
@@ -239,5 +249,27 @@
 		color: #dc2626;
 		cursor: pointer;
 		font-weight: 600;
+	}
+
+	@media (max-width: 960px) {
+		.card {
+			padding: 16px;
+			border-radius: 14px;
+		}
+
+		.primary {
+			width: 100%;
+		}
+
+		td.actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+
+		.link,
+		.danger {
+			margin-right: 0;
+		}
 	}
 </style>

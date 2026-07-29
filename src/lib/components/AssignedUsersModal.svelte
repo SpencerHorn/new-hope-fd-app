@@ -80,6 +80,8 @@
 		left: 50%;
 		transform: translate(-50%, -50%);
 		width: min(420px, 92vw);
+		max-height: 85vh;
+		overflow-y: auto;
 		background: white;
 		border-radius: 20px;
 		padding: 24px;
@@ -132,5 +134,18 @@
 	.muted {
 		color: #6b7280;
 		font-size: 14px;
+	}
+
+	@media (max-width: 700px) {
+		.modal {
+			width: calc(100vw - 16px);
+			padding: 14px;
+			border-radius: 14px;
+		}
+
+		li {
+			padding: 8px 10px;
+			gap: 8px;
+		}
 	}
 </style>

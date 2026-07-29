@@ -207,61 +207,63 @@
 		</div>
 	</div>
 
-	<table>
-		<thead>
-			<tr>
-				<th class="row-number">#</th>
-				<th>Name</th>
-				<th>Phone</th>
-				<th>Email</th>
-				<th>Role</th>
-				<th>Checklists</th>
-				<th></th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each filteredUsers as u, index}
+	<div class="table-wrap">
+		<table>
+			<thead>
 				<tr>
-					<td class="row-number">{index + 1}</td>
-					<td>
-						<a class="user-link" href={`/users/${u.id}`}>
-							{u.lastName}, {u.firstName}
-						</a>
-					</td>
-					<td>{u.phone}</td>
-					<td>{u.personalEmail}</td>
-					<td>
-						{#if canManageRoles}
-							<select
-								class="role-pill"
-								value={u.role}
-								on:change={(e) =>
-									updateRole(u.id, (e.target as HTMLSelectElement).value)
-								}
-							>
-								<option value="probationary">Probationary</option>
-								<option value="volunteer">Volunteer</option>
-								<option value="employee">Employee</option>
-								<option value="administrator">Administrator</option>
-							</select>
-						{:else}
-							<span class="role-badge">{u.role}</span>
-						{/if}
-					</td>
-					<td>
-						<button class="link" on:click={() => openChecklistModal(u)}>
-							View
-						</button>
-					</td>
-					<td>
-						{#if canDeleteUsers}
-							<button class="delete" on:click={() => deleteUser(u.id)}>✕</button>
-						{/if}
-					</td>
+					<th class="row-number">#</th>
+					<th>Name</th>
+					<th>Phone</th>
+					<th>Email</th>
+					<th>Role</th>
+					<th>Checklists</th>
+					<th></th>
 				</tr>
-			{/each}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				{#each filteredUsers as u, index}
+					<tr>
+						<td class="row-number">{index + 1}</td>
+						<td>
+							<a class="user-link" href={`/users/${u.id}`}>
+								{u.lastName}, {u.firstName}
+							</a>
+						</td>
+						<td>{u.phone}</td>
+						<td>{u.personalEmail}</td>
+						<td>
+							{#if canManageRoles}
+								<select
+									class="role-pill"
+									value={u.role}
+									on:change={(e) =>
+										updateRole(u.id, (e.target as HTMLSelectElement).value)
+									}
+								>
+									<option value="probationary">Probationary</option>
+									<option value="volunteer">Volunteer</option>
+									<option value="employee">Employee</option>
+									<option value="administrator">Administrator</option>
+								</select>
+							{:else}
+								<span class="role-badge">{u.role}</span>
+							{/if}
+						</td>
+						<td>
+							<button class="link" on:click={() => openChecklistModal(u)}>
+								View
+							</button>
+						</td>
+						<td>
+							{#if canDeleteUsers}
+								<button class="delete" on:click={() => deleteUser(u.id)}>✕</button>
+							{/if}
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
 </section>
 
 <style>
@@ -352,9 +354,15 @@
 		flex-wrap: wrap;
 	}
 
+	.table-wrap {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
 	table {
 		width: 100%;
 		border-collapse: collapse;
+		min-width: 760px;
 	}
 
 	th,
@@ -371,6 +379,7 @@
 		padding: 6px 12px;
 		font-weight: 600;
 		border: none;
+		min-width: 128px;
 	}
 
 	.role-badge {
@@ -427,6 +436,54 @@
 .user-link:hover {
 	text-decoration: underline;
 }
+
+	@media (max-width: 960px) {
+		.card {
+			padding: 16px;
+			border-radius: 14px;
+			margin-bottom: 18px;
+		}
+
+		.form-grid {
+			grid-template-columns: 1fr;
+			gap: 10px;
+		}
+
+		input,
+		select {
+			font-size: 16px;
+		}
+
+		.print-roster {
+			font-size: 15px;
+		}
+	}
+
+	@media (max-width: 640px) {
+		h1,
+		h2 {
+			margin-bottom: 10px;
+		}
+
+		.actions-row {
+			width: 100%;
+		}
+
+		button.primary {
+			width: 100%;
+			text-align: center;
+		}
+
+		.table-header {
+			align-items: flex-start;
+			gap: 4px;
+		}
+
+		th,
+		td {
+			padding: 12px 8px;
+		}
+	}
 
 </style>
 

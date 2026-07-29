@@ -1,23 +1,41 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { canViewChecklists, isAdministrator } from '$lib/auth/roles';
 
 	export let appRole = 'probationary';
 	let toolsOpen = false;
+	export let mobileOpen = false;
+
+	const dispatch = createEventDispatcher();
 	$: canManageRoles = isAdministrator(appRole);
 	$: canSeeChecklists = canViewChecklists(appRole);
+
+	function navigate(path: string) {
+		goto(path);
+		dispatch('close');
+	}
 </script>
 
-<aside class="sidebar">
+<aside class="sidebar" class:mobile-open={mobileOpen}>
 	<!-- TOP -->
 	<div class="sidebar-top">
+		<button
+			type="button"
+			class="mobile-close"
+			aria-label="Close navigation"
+			on:click={() => dispatch('close')}
+		>
+			Close
+		</button>
+
 		<img src="/NewHopeLogo.png" alt="NHFD Logo" class="logo" />
 
 		<nav class="nav">
 			<button
 				class:selected={$page.url.pathname.startsWith('/dashboard')}
-				on:click={() => goto('/dashboard')}
+				on:click={() => navigate('/dashboard')}
 			>
 				Dashboard
 			</button>
@@ -31,7 +49,7 @@
 					}
 
 					toolsOpen = true;
-					goto('/tools');
+					navigate('/tools');
 				}}
 			>
 				Tools ▸
@@ -39,14 +57,14 @@
 
 			{#if toolsOpen || $page.url.pathname.startsWith('/tools')}
 				<div class="legacy">
-					<button class="subnav" on:click={() => goto('/tools/training')}>Training</button>
-					<button class="subnav" on:click={() => goto('/tools/roster')}>Roster</button>
+					<button class="subnav" on:click={() => navigate('/tools/training')}>Training</button>
+					<button class="subnav" on:click={() => navigate('/tools/roster')}>Roster</button>
 				</div>
 			{/if}
 
 			<button
 				class:selected={$page.url.pathname.startsWith('/users')}
-				on:click={() => goto('/users')}
+				on:click={() => navigate('/users')}
 			>
 				User Management
 			</button>
@@ -54,7 +72,7 @@
 			{#if canSeeChecklists}
 				<button
 					class:selected={$page.url.pathname.startsWith('/checklists')}
-					on:click={() => goto('/checklists')}
+					on:click={() => navigate('/checklists')}
 				>
 					Checklists
 				</button>
@@ -66,7 +84,7 @@
 	<!-- BOTTOM (STICKY) -->
 	<div class="sidebar-bottom">
 		{#if canManageRoles}
-			<button on:click={() => goto('/invite/create')}>
+			<button on:click={() => navigate('/invite/create')}>
 				Invite User
 			</button>
 		{/if}
@@ -104,6 +122,10 @@
 	.logo {
 		width: 160px;
 		margin: 0 auto 8px auto;
+	}
+
+	.mobile-close {
+		display: none;
 	}
 
 	.nav {
@@ -150,5 +172,44 @@
 	.logout {
 		background: #fee2e2;
 		color: #991b1b;
+	}
+
+	@media (max-width: 960px) {
+		.sidebar {
+			width: min(320px, 84vw);
+			height: 100dvh;
+			z-index: 100;
+			background: rgba(255, 255, 255, 0.98);
+			transform: translateX(-110%);
+			transition: transform 0.2s ease;
+		}
+
+		.sidebar.mobile-open {
+			transform: translateX(0);
+		}
+
+		.mobile-close {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			align-self: flex-end;
+			padding: 6px 10px;
+			border-radius: 8px;
+			background: #e5e7eb;
+			font-size: 13px;
+		}
+
+		.logo {
+			width: 132px;
+		}
+
+		button,
+		.subnav {
+			font-size: 16px;
+		}
+
+		.sidebar-bottom {
+			padding-bottom: 12px;
+		}
 	}
 </style>
