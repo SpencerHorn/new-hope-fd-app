@@ -15,6 +15,13 @@
       "when": 1785346500000,
       "tag": "0001_auth_user_password_flags",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1785355200000,
+      "tag": "0002_users_soft_delete",
+      "breakpoints": true
     }
   ]
 }

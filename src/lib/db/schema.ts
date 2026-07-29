@@ -14,6 +14,7 @@ export const users = sqliteTable('users', {
 	fitTestDate: text('fit_test_date'),
 	maskSize: text('mask_size'),
 	tshirtSize: text('tshirt_size'),
+	deletedAt: text('deleted_at'),
 	createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
 	updatedAt: text('updated_at').default('CURRENT_TIMESTAMP')
 });

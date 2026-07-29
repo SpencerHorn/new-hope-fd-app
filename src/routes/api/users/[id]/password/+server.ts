@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import { getDB } from '$lib/db/client';
 import { authUsers, users } from '$lib/db/schema';
 import { isAdministrator } from '$lib/auth/roles';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { hashPassword } from '$lib/server/password';
 import { generateTemporaryPassword } from '$lib/server/tempPassword';
 
@@ -25,7 +25,11 @@ export const POST = async ({ params, request, locals }) => {
 	}
 
 	const db = await getDB();
-	const profile = await db.select().from(users).where(eq(users.id, userId)).get();
+	const profile = await db
+		.select()
+		.from(users)
+		.where(and(eq(users.id, userId), isNull(users.deletedAt)))
+		.get();
 	if (!profile) {
 		return json({ error: 'User not found' }, { status: 404 });
 	}

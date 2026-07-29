@@ -1,5 +1,5 @@
 // src/hooks.server.ts
-import { validateRequest } from '$lib/server/auth';
+import { getLucia, validateRequest } from '$lib/server/auth';
 import { getAppUserFromSessionUser } from '$lib/server/appUser';
 import { getDB } from '$lib/db/client';
 import { authUsers } from '$lib/db/schema';
@@ -39,6 +39,24 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const url = event.url.pathname;
 	const isPublicInviteRoute = url.startsWith('/invite') || url.startsWith('/api/invite');
 	const isPublicAuthRoute = url === '/login' || url === '/signup';
+	const isPublicAccountRoute = isPublicInviteRoute || isPublicAuthRoute;
+
+	if (user && !appUser) {
+		const lucia = await getLucia();
+		if (session) {
+			await lucia.invalidateSession(session.id);
+		}
+
+		const blankCookie = lucia.createBlankSessionCookie();
+		event.cookies.set(blankCookie.name, blankCookie.value, {
+			...blankCookie.attributes,
+			path: '/'
+		});
+
+		if (!isPublicAccountRoute) {
+			throw redirect(302, '/login');
+		}
+	}
 
 	if (!user && !isPublicAuthRoute && !isPublicInviteRoute) {
 		throw redirect(302, '/login');
