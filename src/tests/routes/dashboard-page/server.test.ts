@@ -7,11 +7,12 @@ import { getDB } from '$lib/db/client';
 
 describe('dashboard page server', () => {
 	it('returns user not found when no app user id exists', async () => {
-		const result = await load({ locals: { appUser: null } } as any);
+		const result = await load({ locals: { appUser: null, mustChangePassword: false } } as any);
 
 		expect(result).toEqual({
 			user: null,
-			error: 'User not found'
+			error: 'User not found',
+			mustChangePassword: false
 		});
 	});
 
@@ -24,11 +25,12 @@ describe('dashboard page server', () => {
 			})
 		} as any);
 
-		const result = await load({ locals: { appUser: { id: 9 } } } as any);
+		const result = await load({ locals: { appUser: { id: 9 }, mustChangePassword: true } } as any);
 
 		expect(result).toEqual({
 			user: null,
-			error: 'User not found'
+			error: 'User not found',
+			mustChangePassword: true
 		});
 	});
 
@@ -41,11 +43,12 @@ describe('dashboard page server', () => {
 			})
 		} as any);
 
-		const result = await load({ locals: { appUser: { id: 3 } } } as any);
+		const result = await load({ locals: { appUser: { id: 3 }, mustChangePassword: false } } as any);
 
 		expect(result).toEqual({
 			user: { id: 3, firstName: 'Jamie' },
-			error: null
+			error: null,
+			mustChangePassword: false
 		});
 	});
 });

@@ -41,7 +41,8 @@ export async function POST({ params, request, cookies }) {
 		.insert(authUsers)
 		.values({
 			email: invite.email,
-			password_hash: hashed
+			password_hash: hashed,
+			mustChangePassword: 0
 		})
 		.returning({ id: authUsers.id });
 

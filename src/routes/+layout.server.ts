@@ -12,6 +12,7 @@ export const load = async ({ locals, url }) => {
 
 	return {
 		user: locals.user,
-		appUser: locals.appUser
+		appUser: locals.appUser,
+		mustChangePassword: locals.mustChangePassword ?? false
 	};
 };

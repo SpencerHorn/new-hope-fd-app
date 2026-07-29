@@ -5,11 +5,13 @@ import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const currentUserId = locals.appUser?.id;
+	const mustChangePassword = locals.mustChangePassword ?? false;
 
 	if (!currentUserId) {
 		return {
 			user: null,
-			error: 'User not found'
+			error: 'User not found',
+			mustChangePassword
 		};
 	}
 
@@ -19,12 +21,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (!user) {
 		return {
 			user: null,
-			error: 'User not found'
+			error: 'User not found',
+			mustChangePassword
 		};
 	}
 
 	return {
 		user,
-		error: null
+		error: null,
+		mustChangePassword
 	};
 };

@@ -9,7 +9,9 @@ import { Argon2id } from 'oslo/password';
 export const actions = {
 	default: async ({ request, cookies }) => {
 		const form = await request.formData();
-		const email = String(form.get('email') ?? '');
+		const email = String(form.get('email') ?? '')
+			.trim()
+			.toLowerCase();
 		const password = String(form.get('password') ?? '');
 
 		if (!email || !password) {

@@ -5,6 +5,12 @@ declare global {
 		interface Locals {
 			user: import('lucia').User | null;
 			session: import('lucia').Session | null;
+			authUser?: {
+				id: number;
+				email: string;
+				mustChangePassword: boolean;
+			} | null;
+			mustChangePassword?: boolean;
 			appUser?: {
 				id: number;
 				firstName: string;
