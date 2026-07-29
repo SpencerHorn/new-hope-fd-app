@@ -1,6 +1,6 @@
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 export async function getAppUserFromSessionUser(sessionUser: unknown) {
 	const email =
@@ -21,7 +21,7 @@ export async function getAppUserFromSessionUser(sessionUser: unknown) {
 			role: users.role
 		})
 		.from(users)
-		.where(eq(users.personalEmail, email))
+		.where(and(eq(users.personalEmail, email), isNull(users.deletedAt)))
 		.get();
 
 	return appUser ?? null;

@@ -1,16 +1,32 @@
 import { getDB } from '$lib/db/client';
 import { authUsers, users } from '$lib/db/schema';
 import { isAdministrator } from '$lib/auth/roles';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 export async function DELETE({ params, locals }) {
 	if (!isAdministrator(locals?.appUser?.role)) {
 		return new Response('Forbidden', { status: 403 });
 	}
 
-	const db = await getDB();
+	const id = Number(params.id);
+	if (!id) {
+		return new Response('Invalid user id', { status: 400 });
+	}
 
-	await db.delete(users).where(eq(users.id, Number(params.id)));
+	const db = await getDB();
+	const existingProfile = await db
+		.select({ id: users.id })
+		.from(users)
+		.where(and(eq(users.id, id), isNull(users.deletedAt)))
+		.get();
+	if (!existingProfile) {
+		return new Response('User not found', { status: 404 });
+	}
+
+	await db
+		.update(users)
+		.set({ deletedAt: new Date().toISOString() })
+		.where(eq(users.id, id));
 
 	return new Response(null, { status: 204 });
 }
@@ -30,7 +46,11 @@ export async function PATCH({ params, request, locals }) {
 
 	const payload = await request.json();
 	const db = await getDB();
-	const existingProfile = await db.select().from(users).where(eq(users.id, id)).get();
+	const existingProfile = await db
+		.select()
+		.from(users)
+		.where(and(eq(users.id, id), isNull(users.deletedAt)))
+		.get();
 	if (!existingProfile) {
 		return new Response('User not found', { status: 404 });
 	}

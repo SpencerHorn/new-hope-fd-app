@@ -4,7 +4,7 @@ import { users } from '$lib/db/schema';
 import { isAdministrator, isAppRole } from '$lib/auth/roles';
 import { DEFAULT_ADMIN_EMAIL } from '$lib/server/adminSeed';
 import { fail } from '@sveltejs/kit';
-import { and, eq, like } from 'drizzle-orm';
+import { and, eq, isNull, like } from 'drizzle-orm';
 import {
 	findExistingUserByEmailOrPhone,
 	formatPhone,
@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const isProbationary = locals.appUser?.role === 'probationary';
 	const currentUserId = locals.appUser?.id;
 
-	const conditions = [];
+	const conditions = [isNull(users.deletedAt)];
 
 	if (isProbationary) {
 		if (!currentUserId) {
@@ -31,7 +31,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 				users: [],
 				canManageRoles: false,
 				canDeleteUsers: false,
-				canManageUsers: false
+				canManageUsers: false,
+				canManageDeletedUsers: false
 			};
 		}
 		conditions.push(eq(users.id, currentUserId));
@@ -54,7 +55,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		users: results,
 		canManageRoles: isAdmin,
 		canDeleteUsers: isAdmin,
-		canManageUsers: isAdmin
+		canManageUsers: isAdmin,
+		canManageDeletedUsers: isAdmin
 	};
 };
 

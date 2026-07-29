@@ -9,7 +9,7 @@ describe('api users', () => {
 	it('GET returns all users', async () => {
 		vi.mocked(getDB).mockReturnValue({
 			select: () => ({
-				from: () => ({ all: () => [{ id: 1, firstName: 'Jane' }] })
+				from: () => ({ where: () => ({ all: () => [{ id: 1, firstName: 'Jane' }] }) })
 			})
 		} as any);
 

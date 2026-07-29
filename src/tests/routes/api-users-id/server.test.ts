@@ -16,9 +16,14 @@ describe('api users/[id]', () => {
 	});
 
 	it('DELETE allows admin users', async () => {
+		const getMock = vi.fn(async () => ({ id: 1 }));
 		const whereMock = vi.fn(async () => undefined);
+		const setMock = vi.fn(() => ({ where: whereMock }));
 		vi.mocked(getDB).mockResolvedValue({
-			delete: () => ({ where: whereMock })
+			select: () => ({
+				from: () => ({ where: () => ({ get: getMock }) })
+			}),
+			update: () => ({ set: setMock })
 		} as any);
 
 		const res = await DELETE({
@@ -28,6 +33,7 @@ describe('api users/[id]', () => {
 
 		expect(res.status).toBe(204);
 		expect(whereMock).toHaveBeenCalled();
+		expect(setMock).toHaveBeenCalledWith(expect.objectContaining({ deletedAt: expect.any(String) }));
 	});
 
 	it('PATCH rejects non-admin users editing another profile', async () => {

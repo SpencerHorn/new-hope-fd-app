@@ -2,7 +2,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { isAdministrator } from '$lib/auth/roles';
 import { DEFAULT_ADMIN_EMAIL } from '$lib/server/adminSeed';
 import {
@@ -20,9 +20,9 @@ export const GET: RequestHandler = async ({ locals }) => {
 			? db
 				.select()
 				.from(users)
-				.where(eq(users.id, locals.appUser.id))
+				.where(and(eq(users.id, locals.appUser.id), isNull(users.deletedAt)))
 				.all()
-			: db.select().from(users).all();
+			: db.select().from(users).where(isNull(users.deletedAt)).all();
 
 	return json(result.filter((user) => user.personalEmail !== DEFAULT_ADMIN_EMAIL));
 };

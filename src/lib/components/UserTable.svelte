@@ -5,6 +5,7 @@
 	export let canManageRoles = false;
 	export let canDeleteUsers = false;
 	export let canManageUsers = false;
+	export let canManageDeletedUsers = false;
 
 	let showChecklistModal = false;
 	let selectedUser: any = null;
@@ -146,6 +147,12 @@
 
 <!-- ================= FORM ================= -->
 <section class="card">
+	{#if canManageDeletedUsers}
+		<div class="deleted-link-row">
+			<a class="deleted-link" href="/users/deleted">View Deleted Users</a>
+		</div>
+	{/if}
+
 	<h1>User Management</h1>
 
 	{#if canManageUsers}
@@ -281,6 +288,18 @@
 	h1,
 	h2 {
 		margin-bottom: 16px;
+	}
+
+	.deleted-link-row {
+		display: flex;
+		justify-content: flex-start;
+		margin-bottom: 12px;
+	}
+
+	.deleted-link {
+		text-decoration: none;
+		font-weight: 600;
+		color: #1d4ed8;
 	}
 
 	/* ---------- Form ---------- */

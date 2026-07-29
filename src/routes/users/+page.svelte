@@ -8,4 +8,5 @@
 	canManageRoles={data.canManageRoles}
 	canDeleteUsers={data.canDeleteUsers}
 	canManageUsers={data.canManageUsers}
+	canManageDeletedUsers={data.canManageDeletedUsers}
 />

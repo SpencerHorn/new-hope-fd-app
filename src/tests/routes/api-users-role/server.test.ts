@@ -36,7 +36,11 @@ describe('api users/[id]/role', () => {
 
 	it('updates role for admin with valid role', async () => {
 		const whereMock = vi.fn(async () => undefined);
+		const getMock = vi.fn(async () => ({ id: 2 }));
 		vi.mocked(getDB).mockResolvedValue({
+			select: () => ({
+				from: () => ({ where: () => ({ get: getMock }) })
+			}),
 			update: () => ({ set: () => ({ where: whereMock }) })
 		} as any);
 
@@ -51,6 +55,7 @@ describe('api users/[id]/role', () => {
 		} as any);
 
 		expect(res.status).toBe(204);
+		expect(getMock).toHaveBeenCalled();
 		expect(whereMock).toHaveBeenCalled();
 	});
 });

@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const currentUserId = locals.appUser?.id;
@@ -16,7 +16,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	const db = await getDB();
-	const user = await db.select().from(users).where(eq(users.id, currentUserId)).get();
+	const user = await db
+		.select()
+		.from(users)
+		.where(and(eq(users.id, currentUserId), isNull(users.deletedAt)))
+		.get();
 
 	if (!user) {
 		return {

@@ -18,7 +18,7 @@ describe('users page server', () => {
 	it('load returns all users for admin and sets admin flags', async () => {
 		vi.mocked(getDB).mockResolvedValue({
 			select: () => ({
-				from: () => ({ all: async () => [{ id: 1, firstName: 'Jane' }] })
+				from: () => ({ where: () => ({ all: async () => [{ id: 1, firstName: 'Jane' }] }) })
 			})
 		} as any);
 
@@ -31,7 +31,8 @@ describe('users page server', () => {
 			users: [{ id: 1, firstName: 'Jane' }],
 			canManageRoles: true,
 			canDeleteUsers: true,
-			canManageUsers: true
+			canManageUsers: true,
+			canManageDeletedUsers: true
 		});
 	});
 
@@ -47,7 +48,8 @@ describe('users page server', () => {
 			users: [],
 			canManageRoles: false,
 			canDeleteUsers: false,
-			canManageUsers: false
+			canManageUsers: false,
+			canManageDeletedUsers: false
 		});
 	});
 
