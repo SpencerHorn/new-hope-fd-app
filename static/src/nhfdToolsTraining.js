@@ -1,4 +1,3 @@
-const STORAGE_KEY = 'nhfdToolsTrainingVolunteers';
 const VERSION_KEY = 'nhfdToolsTrainingVersion';
 const AUTO_PRINT = new URLSearchParams(window.location.search).get('autoprint') === '1';
 
@@ -31,41 +30,12 @@ async function fetchVolunteersFromDatabase() {
 }
 
 async function loadVolunteers() {
-  let fromDb = [];
-
   try {
-    fromDb = await fetchVolunteersFromDatabase();
+    return await fetchVolunteersFromDatabase();
   } catch (err) {
     console.error(err);
+    return [];
   }
-
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        if (fromDb.length === 0) {
-          return parsed;
-        }
-
-        const merged = [...fromDb];
-        for (const name of parsed) {
-          if (!merged.includes(name)) {
-            merged.push(name);
-          }
-        }
-        return merged.sort((a, b) => a.localeCompare(b));
-      }
-    } catch (err) {
-      console.error('Failed to parse saved training volunteers.', err);
-    }
-  }
-
-  return fromDb;
-}
-
-function saveVolunteers() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(volunteers));
 }
 
 async function initializeTable() {
@@ -121,28 +91,7 @@ function renderVolunteers() {
 function createNameCell(volunteerName) {
   const cell = document.createElement('td');
   cell.className = 'name-cell';
-
-  const container = document.createElement('div');
-  container.style.display = 'flex';
-  container.style.justifyContent = 'space-between';
-  container.style.alignItems = 'center';
-
-  const nameSpan = document.createElement('span');
-  nameSpan.textContent = volunteerName;
-  container.appendChild(nameSpan);
-
-  const deleteBtn = document.createElement('button');
-  deleteBtn.type = 'button';
-  deleteBtn.className = 'delete-btn';
-  deleteBtn.textContent = 'x';
-  deleteBtn.title = `Remove ${volunteerName}`;
-  deleteBtn.onclick = function (e) {
-    e.stopPropagation();
-    removeVolunteer(volunteerName);
-  };
-  container.appendChild(deleteBtn);
-
-  cell.appendChild(container);
+  cell.textContent = volunteerName;
   return cell;
 }
 
@@ -164,37 +113,6 @@ function createEmptyNameCell() {
 
 function createEmptyCell() {
   return document.createElement('td');
-}
-
-function addVolunteer() {
-  const input = document.getElementById('newVolunteerName');
-  const name = input.value.trim();
-
-  if (!name) return;
-
-  if (volunteers.includes(name)) {
-    alert('Volunteer already exists!');
-    return;
-  }
-
-  volunteers.push(name);
-  volunteers.sort((a, b) => a.localeCompare(b));
-  renderVolunteers();
-  saveVolunteers();
-  input.value = '';
-}
-
-function removeVolunteer(volunteerName) {
-  if (confirm(`Remove ${volunteerName} from the list?`)) {
-    volunteers = volunteers.filter((v) => v !== volunteerName);
-    renderVolunteers();
-    saveVolunteers();
-  }
-}
-
-function saveVolunteerList() {
-  saveVolunteers();
-  alert(`Volunteer list saved! Current count: ${volunteers.length} volunteers.`);
 }
 
 function waitForHtml2Pdf() {
@@ -238,7 +156,7 @@ async function exportToPDF() {
     }
   };
 
-  const controls = document.querySelectorAll('.volunteer-management, .management-controls, .pdf-export, .delete-btn');
+  const controls = document.querySelectorAll('.pdf-export');
   const originalDisplay = [];
 
   controls.forEach((control) => {
