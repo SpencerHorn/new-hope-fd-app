@@ -1,6 +1,7 @@
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
-import { inArray } from 'drizzle-orm';
+import { and, inArray, ne } from 'drizzle-orm';
+import { DEFAULT_ADMIN_EMAIL } from '$lib/server/adminSeed';
 
 type UserRow = typeof users.$inferSelect;
 
@@ -46,7 +47,11 @@ export async function POST({ request }) {
 	if (groups.employee) rolesToInclude.push('employee');
 
 	// Fetch matching users
-	const rows = await db.select().from(users).where(inArray(users.role, rolesToInclude)).all();
+	const rows = await db
+		.select()
+		.from(users)
+		.where(and(inArray(users.role, rolesToInclude), ne(users.personalEmail, DEFAULT_ADMIN_EMAIL)))
+		.all();
 
 	// Always force lastName + firstName to appear first
 	const requestedFields = fields.filter(isCsvField);

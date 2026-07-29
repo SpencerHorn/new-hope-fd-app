@@ -2,6 +2,7 @@ import type { PageServerLoad, Actions } from './$types';
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
 import { isAdministrator, isAppRole } from '$lib/auth/roles';
+import { DEFAULT_ADMIN_EMAIL } from '$lib/server/adminSeed';
 import { fail } from '@sveltejs/kit';
 import { and, eq, like } from 'drizzle-orm';
 
@@ -42,7 +43,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			? db.select().from(users).where(and(...conditions))
 			: db.select().from(users);
 
-	const results = await query.all();
+	const results = (await query.all()).filter((user) => user.personalEmail !== DEFAULT_ADMIN_EMAIL);
 
 	return {
 		users: results,

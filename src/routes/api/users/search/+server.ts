@@ -2,7 +2,8 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
-import { and, eq, like, or } from 'drizzle-orm';
+import { and, eq, like, ne, or } from 'drizzle-orm';
+import { DEFAULT_ADMIN_EMAIL } from '$lib/server/adminSeed';
 
 // GET /api/users/search?query=John
 export const GET: RequestHandler = async ({ url, locals }) => {
@@ -25,9 +26,15 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			? db
 				.select()
 				.from(users)
-				.where(and(baseMatch, eq(users.id, locals.appUser.id)))
+				.where(
+					and(baseMatch, eq(users.id, locals.appUser.id), ne(users.personalEmail, DEFAULT_ADMIN_EMAIL))
+				)
 				.all()
-			: db.select().from(users).where(baseMatch).all();
+			: db
+				.select()
+				.from(users)
+				.where(and(baseMatch, ne(users.personalEmail, DEFAULT_ADMIN_EMAIL)))
+				.all();
 
 	return json(results);
 };

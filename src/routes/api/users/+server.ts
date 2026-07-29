@@ -4,6 +4,7 @@ import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { isAdministrator } from '$lib/auth/roles';
+import { DEFAULT_ADMIN_EMAIL } from '$lib/server/adminSeed';
 
 // GET /api/users
 export const GET: RequestHandler = async ({ locals }) => {
@@ -11,10 +12,14 @@ export const GET: RequestHandler = async ({ locals }) => {
 
 	const result =
 		locals?.appUser?.role === 'probationary' && locals?.appUser?.id
-			? db.select().from(users).where(eq(users.id, locals.appUser.id)).all()
+			? db
+				.select()
+				.from(users)
+				.where(eq(users.id, locals.appUser.id))
+				.all()
 			: db.select().from(users).all();
 
-	return json(result);
+	return json(result.filter((user) => user.personalEmail !== DEFAULT_ADMIN_EMAIL));
 };
 
 // POST /api/users
