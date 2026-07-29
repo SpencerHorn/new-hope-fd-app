@@ -21,7 +21,7 @@ export async function findExistingUserByEmailOrPhone(
 	phone: string
 ) {
 	return db
-		.select({ id: users.id })
+		.select({ id: users.id, deletedAt: users.deletedAt, personalEmail: users.personalEmail, phone: users.phone })
 		.from(users)
 		.where(or(eq(users.personalEmail, email), eq(users.phone, phone)))
 		.get();

@@ -124,7 +124,12 @@
 
 	async function deleteUser(id: number) {
 		if (!confirm('Delete this user?')) return;
-		await fetch(`/api/users/${id}`, { method: 'DELETE' });
+		const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+		if (!res.ok) {
+			const message = (await res.text()) || 'Unable to delete user.';
+			alert(message);
+			return;
+		}
 		location.reload();
 	}
 

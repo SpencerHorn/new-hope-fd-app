@@ -88,6 +88,26 @@ export const actions: Actions = {
 		const db = await getDB();
 		const existingProfile = await findExistingUserByEmailOrPhone(db, personalEmail, formattedPhone);
 		if (existingProfile) {
+			const sameEmailAsDeleted =
+				existingProfile.personalEmail?.toLowerCase() === personalEmail &&
+				Boolean(existingProfile.deletedAt);
+
+			if (sameEmailAsDeleted) {
+				await db
+					.update(users)
+					.set({
+						firstName,
+						lastName,
+						phone: formattedPhone,
+						personalEmail,
+						role,
+						deletedAt: null
+					})
+					.where(eq(users.id, existingProfile.id));
+
+				return { success: true, restored: true };
+			}
+
 			return fail(400, { error: 'A user with that email or phone already exists.' });
 		}
 
