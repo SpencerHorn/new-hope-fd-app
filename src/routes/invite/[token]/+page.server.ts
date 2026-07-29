@@ -65,7 +65,8 @@ export const actions: Actions = {
 			.insert(authUsers)
 			.values({
 				email: invite.email,
-				password_hash: passwordHash
+				password_hash: passwordHash,
+				mustChangePassword: 0
 			})
 			.returning({ id: authUsers.id });
 

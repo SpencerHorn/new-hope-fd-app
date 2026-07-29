@@ -80,7 +80,8 @@ export const actions = {
 			.insert(authUsers)
 			.values({
 				email,
-				password_hash: passwordHash
+				password_hash: passwordHash,
+				mustChangePassword: 0
 			})
 			.returning({ id: authUsers.id });
 

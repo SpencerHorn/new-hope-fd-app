@@ -45,9 +45,13 @@ describe('api users/[id]', () => {
 	});
 
 	it('PATCH allows users to update their own profile', async () => {
+		const getMock = vi.fn(async () => ({ id: 3, personalEmail: 'a@b.com' }));
 		const whereMock = vi.fn(async () => undefined);
 		const setMock = vi.fn(() => ({ where: whereMock }));
 		vi.mocked(getDB).mockResolvedValue({
+			select: () => ({
+				from: () => ({ where: () => ({ get: getMock }) })
+			}),
 			update: () => ({ set: setMock })
 		} as any);
 
@@ -85,9 +89,13 @@ describe('api users/[id]', () => {
 	});
 
 	it('PATCH allows admin updates', async () => {
+		const getMock = vi.fn(async () => ({ id: 3, personalEmail: 'a@b.com' }));
 		const whereMock = vi.fn(async () => undefined);
 		const setMock = vi.fn(() => ({ where: whereMock }));
 		vi.mocked(getDB).mockResolvedValue({
+			select: () => ({
+				from: () => ({ where: () => ({ get: getMock }) })
+			}),
 			update: () => ({ set: setMock })
 		} as any);
 
@@ -114,5 +122,38 @@ describe('api users/[id]', () => {
 				personalEmail: 'a@b.com'
 			})
 		);
+	});
+
+	it('PATCH returns 409 when personal email conflicts with another auth account', async () => {
+		const getMock = vi
+			.fn()
+			.mockResolvedValueOnce({ id: 5, personalEmail: 'old@example.com' })
+			.mockResolvedValueOnce({ id: 55 })
+			.mockResolvedValueOnce({ id: 77 });
+
+		vi.mocked(getDB).mockResolvedValue({
+			select: () => ({
+				from: () => ({ where: () => ({ get: getMock }) })
+			}),
+			update: () => ({ set: () => ({ where: vi.fn() }) })
+		} as any);
+
+		const req = new Request('http://localhost/api/users/5', {
+			method: 'PATCH',
+			body: JSON.stringify({
+				firstName: 'A',
+				lastName: 'B',
+				personalEmail: 'new@example.com',
+				phone: '(111) 222-3333'
+			})
+		});
+
+		const res = await PATCH({
+			params: { id: '5' },
+			request: req,
+			locals: { appUser: { role: 'administrator', id: 1 } }
+		} as any);
+
+		expect(res.status).toBe(409);
 	});
 });

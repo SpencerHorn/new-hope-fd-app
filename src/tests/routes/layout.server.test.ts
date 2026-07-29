@@ -17,7 +17,7 @@ describe('root layout guard', () => {
 			url: new URL('http://localhost/login')
 		} as any);
 
-		expect(result).toEqual({ user: null });
+		expect(result).toEqual({ user: null, appUser: undefined, mustChangePassword: false });
 	});
 
 	it('allows unauthenticated users on invite paths', async () => {
@@ -26,6 +26,6 @@ describe('root layout guard', () => {
 			url: new URL('http://localhost/invite/abc123')
 		} as any);
 
-		expect(result).toEqual({ user: null });
+		expect(result).toEqual({ user: null, appUser: undefined, mustChangePassword: false });
 	});
 });

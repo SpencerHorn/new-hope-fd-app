@@ -16,6 +16,12 @@
 	let saveMessage = '';
 	let saveError = '';
 	let errors: ValidationErrors = {};
+	let mustChangePassword = Boolean(data.mustChangePassword);
+	let currentPassword = '';
+	let newPassword = '';
+	let confirmPassword = '';
+	let passwordMessage = '';
+	let passwordError = '';
 
 	function isValidEmail(value: string): boolean {
 		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -94,6 +100,48 @@
 		saveError = 'Failed to update profile.';
 	}
 
+	async function updatePassword() {
+		passwordMessage = '';
+		passwordError = '';
+
+		if (!currentPassword || !newPassword || !confirmPassword) {
+			passwordError = 'Please complete all password fields.';
+			return;
+		}
+
+		if (newPassword.length < 10) {
+			passwordError = 'New password must be at least 10 characters.';
+			return;
+		}
+
+		if (newPassword !== confirmPassword) {
+			passwordError = 'New password and confirmation do not match.';
+			return;
+		}
+
+		const res = await fetch('/api/account/password', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				currentPassword,
+				newPassword,
+				confirmPassword
+			})
+		});
+
+		const body = await res.json().catch(() => ({}));
+		if (!res.ok) {
+			passwordError = body.error ?? 'Unable to update password.';
+			return;
+		}
+
+		passwordMessage = body.message ?? 'Password updated successfully.';
+		mustChangePassword = false;
+		currentPassword = '';
+		newPassword = '';
+		confirmPassword = '';
+	}
+
 	async function loadAssignedChecklists() {
 		if (!user) {
 			loadingChecklists = false;
@@ -137,7 +185,47 @@
 			<h1>Dashboard</h1>
 			<p class="muted">{data.error ?? 'Unable to load your profile.'}</p>
 		</section>
-	{:else}
+	{/if}
+
+	<section class="card">
+		<div class="card-header">
+			<div>
+				<h2>Security</h2>
+				<p class="muted">Update your password to keep your account secure.</p>
+			</div>
+		</div>
+
+		{#if mustChangePassword}
+			<p class="notice warning">
+				You must change your temporary password before using the rest of the application.
+			</p>
+		{/if}
+
+		<div class="form-grid">
+			<div class="field-row">
+				<label for="currentPassword">Current Password</label>
+				<input id="currentPassword" type="password" bind:value={currentPassword} />
+			</div>
+
+			<div class="field-row">
+				<label for="newPassword">New Password</label>
+				<input id="newPassword" type="password" bind:value={newPassword} />
+			</div>
+
+			<div class="field-row">
+				<label for="confirmPassword">Confirm New Password</label>
+				<input id="confirmPassword" type="password" bind:value={confirmPassword} />
+			</div>
+		</div>
+
+		<div class="actions">
+			<button class="save-btn" type="button" on:click={updatePassword}>Update Password</button>
+			{#if passwordMessage}<p class="status success">{passwordMessage}</p>{/if}
+			{#if passwordError}<p class="status error">{passwordError}</p>{/if}
+		</div>
+	</section>
+
+	{#if user}
 		<section class="card">
 			<div class="card-header">
 				<div>
@@ -346,6 +434,20 @@
 	.muted {
 		margin: 4px 0 0;
 		color: #6b7280;
+	}
+
+	.notice {
+		margin: 0 0 12px;
+		padding: 10px 12px;
+		border-radius: 10px;
+		font-size: 14px;
+		font-weight: 500;
+	}
+
+	.notice.warning {
+		background: #fff7ed;
+		border: 1px solid #fdba74;
+		color: #9a3412;
 	}
 
 	.role-chip {

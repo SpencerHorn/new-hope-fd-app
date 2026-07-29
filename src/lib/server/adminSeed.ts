@@ -46,7 +46,8 @@ export async function ensureAdminUser(options: EnsureAdminUserOptions): Promise<
 		await executeMutation(
 			db.insert(authUsers).values({
 				email,
-				password_hash: passwordHash
+				password_hash: passwordHash,
+				mustChangePassword: 0
 			})
 		);
 		createdAuthUser = true;

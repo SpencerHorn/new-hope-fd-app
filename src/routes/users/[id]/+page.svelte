@@ -43,6 +43,33 @@
 		}
 	}
 
+	async function resetPassword() {
+		if (!data.user || !data.canManageUsers) return;
+
+		const temporaryPassword = prompt(
+			'Enter a temporary password (leave blank to auto-generate a secure temporary password):',
+			''
+		);
+
+		if (temporaryPassword === null) return;
+
+		const res = await fetch(`/api/users/${data.user.id}/password`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ temporaryPassword })
+		});
+
+		const body = await res.json().catch(() => ({}));
+		if (!res.ok) {
+			alert(body.error ?? 'Failed to reset password');
+			return;
+		}
+
+		alert(
+			`Temporary password for ${user?.firstName} ${user?.lastName}: ${body.temporaryPassword}\n\nThe user will be prompted to change it on their next login.`
+		);
+	}
+
 	// ----------------------------
 	// Checklist logic
 	// ----------------------------
@@ -161,6 +188,10 @@
 					Save Changes
 				</button>
 
+				<button class="reset-password" type="button" on:click={resetPassword}>
+					Reset Password
+				</button>
+
 				<button class="delete-user" type="button" on:click={deleteUser}>
 					Delete User
 				</button>
@@ -271,6 +302,17 @@
 		color: white;
 		border-radius: 4px;
 		border: none;
+		cursor: pointer;
+	}
+
+	.reset-password {
+		grid-column: span 2;
+		padding: 10px;
+		background: #fef3c7;
+		color: #92400e;
+		border-radius: 8px;
+		border: 1px solid #fcd34d;
+		font-weight: 600;
 		cursor: pointer;
 	}
 

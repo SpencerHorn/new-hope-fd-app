@@ -150,7 +150,8 @@ export const userChecklistItemRelations = relations(userChecklistItems, ({ one }
 export const authUsers = sqliteTable('auth_users', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	email: text('email').notNull().unique(),
-	password_hash: text('password_hash').notNull()
+	password_hash: text('password_hash').notNull(),
+	mustChangePassword: integer('must_change_password').notNull().default(0)
 });
 
 export const authSessions = sqliteTable('auth_sessions', {
