@@ -150,4 +150,26 @@
 	.switch-auth a:hover {
 		text-decoration: underline;
 	}
+
+	@media (max-width: 640px) {
+		.login-card {
+			padding: 1.25rem;
+			border-radius: 14px;
+		}
+
+		.login-logo {
+			width: min(72vw, 220px);
+		}
+
+		input,
+		button,
+		.create-account-btn {
+			width: 100%;
+			box-sizing: border-box;
+		}
+
+		h2 {
+			font-size: 1.2rem;
+		}
+	}
 </style>

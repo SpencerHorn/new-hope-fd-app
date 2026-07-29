@@ -230,4 +230,27 @@
 		color: #6b7280;
 		font-size: 14px;
 	}
+
+	@media (max-width: 700px) {
+		.modal {
+			width: calc(100vw - 16px);
+			padding: 16px;
+			border-radius: 14px;
+		}
+
+		.actions {
+			justify-content: stretch;
+			flex-wrap: wrap;
+		}
+
+		.primary,
+		.secondary {
+			flex: 1 1 100%;
+		}
+
+		.group-options,
+		.user-list {
+			margin-left: 0;
+		}
+	}
 </style>

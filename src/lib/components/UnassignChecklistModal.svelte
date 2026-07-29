@@ -140,6 +140,8 @@
 		left: 50%;
 		transform: translate(-50%, -50%);
 		width: min(560px, 92vw);
+		max-height: 85vh;
+		overflow-y: auto;
 		background: white;
 		border-radius: 20px;
 		padding: 24px;
@@ -206,5 +208,28 @@
 		padding: 12px 20px;
 		cursor: pointer;
 		font-weight: 600;
+	}
+
+	@media (max-width: 700px) {
+		.modal {
+			width: calc(100vw - 16px);
+			padding: 16px;
+			border-radius: 14px;
+		}
+
+		.actions {
+			justify-content: stretch;
+			flex-wrap: wrap;
+		}
+
+		.secondary,
+		.danger {
+			flex: 1 1 100%;
+		}
+
+		.group-options,
+		.user-list {
+			margin-left: 0;
+		}
 	}
 </style>

@@ -196,36 +196,38 @@
 						</button>
 					</div>
 
-					<table>
-						<thead>
-							<tr>
-								<th>#</th>
-								<th>Task</th>
-								<th>Done</th>
-								<th>Date</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each checklist.items as item}
-								<tr class:completed={item.completed}>
-									<td>{item.number}</td>
-									<td>{item.taskName}</td>
-									<td>
-										<input
-											type="checkbox"
-											checked={item.completed}
-											on:change={() => toggleItem(item)}
-										/>
-									</td>
-									<td>
-										{item.dateCompleted
-											? new Date(item.dateCompleted).toLocaleDateString()
-											: '—'}
-									</td>
+					<div class="table-wrap">
+						<table>
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Task</th>
+									<th>Done</th>
+									<th>Date</th>
 								</tr>
-							{/each}
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								{#each checklist.items as item}
+									<tr class:completed={item.completed}>
+										<td>{item.number}</td>
+										<td>{item.taskName}</td>
+										<td>
+											<input
+												type="checkbox"
+												checked={item.completed}
+												on:change={() => toggleItem(item)}
+											/>
+										</td>
+										<td>
+											{item.dateCompleted
+												? new Date(item.dateCompleted).toLocaleDateString()
+												: '—'}
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
 				</div>
 			{/each}
 		{/if}
@@ -244,6 +246,11 @@
 		grid-template-columns: 1fr 1fr;
 		gap: 10px 20px;
 		margin-bottom: 30px;
+	}
+
+	.table-wrap {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	label {
@@ -299,6 +306,7 @@
 		width: 100%;
 		border-collapse: collapse;
 		margin-top: 10px;
+		min-width: 520px;
 	}
 
 	th,
@@ -330,6 +338,34 @@
 
 	.print-btn:hover {
 		text-decoration: underline;
+	}
+
+	@media (max-width: 960px) {
+		.user-details {
+			max-width: 100%;
+			margin: 8px auto;
+		}
+
+		.form-section {
+			grid-template-columns: 1fr;
+			gap: 8px;
+		}
+
+		.save-btn,
+		.delete-user {
+			grid-column: 1;
+			width: 100%;
+		}
+
+		.checklist-card {
+			padding: 14px;
+		}
+
+		.checklist-header {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 6px;
+		}
 	}
 
 </style>

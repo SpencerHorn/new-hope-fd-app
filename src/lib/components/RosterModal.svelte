@@ -159,7 +159,9 @@
 		background: white;
 		padding: 1.75rem;
 		border-radius: 14px;
-		min-width: 360px;
+		width: min(560px, 92vw);
+		max-height: 88vh;
+		overflow-y: auto;
 		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 	}
 
@@ -193,5 +195,22 @@
 
 	button:hover {
 		background: #333;
+	}
+
+	@media (max-width: 700px) {
+		.modal {
+			width: calc(100vw - 16px);
+			padding: 14px;
+		}
+
+		.actions {
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+
+		.actions button,
+		.export-buttons button {
+			width: 100%;
+		}
 	}
 </style>

@@ -120,6 +120,8 @@
 		left: 50%;
 		transform: translate(-50%, -50%);
 		width: min(1080px, 95vw);
+		max-height: 90vh;
+		overflow-y: auto;
 		background: white;
 		border-radius: 20px;
 		padding: 24px;
@@ -135,11 +137,12 @@
 	}
 
 	input {
-		width: 75%;
+		width: 100%;
 		padding: 12px 14px;
 		border-radius: 12px;
 		border: 1px solid #d1d5db;
 		margin-top: 6px;
+		box-sizing: border-box;
 	}
 
 	.item-row {
@@ -198,5 +201,27 @@
 		all: unset;
 		cursor: pointer;
 		font-size: 18px;
+	}
+
+	@media (max-width: 700px) {
+		.modal {
+			width: calc(100vw - 16px);
+			padding: 16px;
+			border-radius: 14px;
+		}
+
+		.actions {
+			justify-content: stretch;
+			flex-wrap: wrap;
+		}
+
+		.primary,
+		.secondary {
+			flex: 1 1 100%;
+		}
+
+		.item-row {
+			grid-template-columns: 24px 1fr 24px;
+		}
 	}
 </style>

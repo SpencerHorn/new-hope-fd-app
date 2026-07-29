@@ -64,36 +64,38 @@
 					</button>
 				</div>
 
-				<table>
-					<thead>
-						<tr>
-							<th>#</th>
-							<th>Task</th>
-							<th>Done</th>
-							<th>Date</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each checklist.items as item}
-							<tr class:completed={item.completed}>
-								<td>{item.number}</td>
-								<td>{item.taskName}</td>
-								<td>
-									<input
-										type="checkbox"
-										checked={item.completed}
-										on:change={() => toggleItem(item)}
-									/>
-								</td>
-								<td>
-									{item.dateCompleted
-										? new Date(item.dateCompleted).toLocaleDateString()
-										: '—'}
-								</td>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Task</th>
+								<th>Done</th>
+								<th>Date</th>
 							</tr>
-						{/each}
-					</tbody>
-				</table>
+						</thead>
+						<tbody>
+							{#each checklist.items as item}
+								<tr class:completed={item.completed}>
+									<td>{item.number}</td>
+									<td>{item.taskName}</td>
+									<td>
+										<input
+											type="checkbox"
+											checked={item.completed}
+											on:change={() => toggleItem(item)}
+										/>
+									</td>
+									<td>
+										{item.dateCompleted
+											? new Date(item.dateCompleted).toLocaleDateString()
+											: '—'}
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
 			</section>
 		{/each}
 	{/if}
@@ -151,6 +153,11 @@
 		margin-bottom: 32px;
 	}
 
+	.table-wrap {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
 	.checklist-header {
 		display: flex;
 		justify-content: space-between;
@@ -174,6 +181,7 @@
 	table {
 		width: 100%;
 		border-collapse: collapse;
+		min-width: 520px;
 	}
 
 	th,
@@ -185,5 +193,21 @@
 	tr.completed td {
 		opacity: 0.6;
 		text-decoration: line-through;
+	}
+
+	@media (max-width: 700px) {
+		.modal {
+			width: calc(100vw - 16px);
+			max-height: 90dvh;
+			padding: 14px;
+			border-radius: 14px;
+		}
+
+		.modal-header,
+		.checklist-header {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 6px;
+		}
 	}
 </style>
