@@ -48,6 +48,7 @@ describe('invite token page', () => {
 				.mockReturnValueOnce({
 					from: () => ({ where: () => ({ get: async () => ({ email: 'invitee@example.com' }) }) })
 				})
+				.mockReturnValueOnce({ from: () => ({ where: () => ({ get: async () => undefined }) }) })
 				.mockReturnValueOnce({ from: () => ({ where: () => ({ get: async () => undefined }) }) }),
 			insert: vi.fn().mockReturnValue({
 				values: () => ({ returning: async () => [{ id: 9 }] })
@@ -78,5 +79,28 @@ describe('invite token page', () => {
 			'cookie',
 			expect.objectContaining({ path: '/' })
 		);
+	});
+
+	it('rejects invite when member profile already exists for the email', async () => {
+		const db = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: () => ({ where: () => ({ get: async () => ({ email: 'invitee@example.com' }) }) })
+				})
+				.mockReturnValueOnce({ from: () => ({ where: () => ({ get: async () => ({ id: 42 }) }) }) })
+				.mockReturnValueOnce({ from: () => ({ where: () => ({ get: async () => ({ id: 42 }) }) }) }),
+			delete: vi.fn().mockReturnValue({ where: async () => undefined })
+		} as any;
+		vi.mocked(getDB).mockResolvedValue(db);
+
+		const result = await actions.default(
+			makeFormEvent('token1', { password: 'GoodPassword123!', confirm: 'GoodPassword123!' })
+		);
+
+		expect(result).toMatchObject({
+			status: 400,
+			data: { message: 'A member profile for this email already exists. Please sign in.' }
+		});
 	});
 });

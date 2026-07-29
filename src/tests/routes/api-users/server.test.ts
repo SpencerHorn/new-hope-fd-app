@@ -81,6 +81,26 @@ describe('api users', () => {
 		expect(res.status).toBe(400);
 	});
 
+	it('POST rejects duplicate email', async () => {
+		vi.mocked(getDB).mockReturnValue({
+			select: () => ({
+				from: () => ({ where: () => ({ get: () => ({ id: 99 }) }) })
+			})
+		} as any);
+
+		const req = new Request('http://localhost/api/users', {
+			method: 'POST',
+			body: JSON.stringify({
+				firstName: 'A',
+				lastName: 'B',
+				personalEmail: 'a@b.com',
+				phone: '(111) 222-3333'
+			})
+		});
+		const res = await POST({ request: req, locals: { appUser: { role: 'administrator' } } } as any);
+		expect(res.status).toBe(400);
+	});
+
 	it('POST creates a user', async () => {
 		vi.mocked(getDB).mockReturnValue({
 			select: () => ({
