@@ -46,6 +46,26 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const existing = await findExistingUserByEmailOrPhone(db, personalEmail, formattedPhone);
 
 	if (existing) {
+		const sameEmailAsDeleted =
+			existing.personalEmail?.toLowerCase() === personalEmail && Boolean(existing.deletedAt);
+
+		if (sameEmailAsDeleted) {
+			await db
+				.update(users)
+				.set({
+					firstName: data.firstName,
+					lastName: data.lastName,
+					personalEmail,
+					phone: formattedPhone,
+					role: 'probationary',
+					deletedAt: null
+				})
+				.where(eq(users.id, existing.id));
+
+			const restored = await db.select().from(users).where(eq(users.id, existing.id)).get();
+			return json(restored, { status: 200 });
+		}
+
 		return json({ message: 'A user with that email or phone already exists.' }, { status: 400 });
 	}
 
