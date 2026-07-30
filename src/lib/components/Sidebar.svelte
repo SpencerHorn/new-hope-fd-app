@@ -59,6 +59,7 @@
 				<div class="legacy">
 					<button class="subnav" on:click={() => navigate('/tools/training')}>Training</button>
 					<button class="subnav" on:click={() => navigate('/tools/roster')}>Roster</button>
+					<button class="subnav" on:click={() => navigate('/tools/sop')}>SOP Writer</button>
 				</div>
 			{/if}
 
