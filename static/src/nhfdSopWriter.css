@@ -32,8 +32,9 @@ body {
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+  width: var(--paper-width);
+  margin: 0 auto 14px;
   padding: 10px;
-  margin-bottom: 14px;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: #ffffff;
@@ -48,6 +49,102 @@ body {
   cursor: pointer;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 13px;
+}
+
+#sopNameInput {
+  min-width: 240px;
+  max-width: 320px;
+  padding: 8px 10px;
+  border: 1px solid #9ca3af;
+  border-radius: 4px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+}
+
+.save-sop-btn {
+  background: #065f46;
+  color: #fff;
+}
+
+.assign-sop-btn {
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.load-sop-btn {
+  background: #0f766e;
+  color: #fff;
+}
+
+.save-status {
+  margin-left: auto;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  color: #1f2937;
+}
+
+.load-sop-dialog {
+  width: min(520px, calc(100vw - 24px));
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 0;
+}
+
+.load-sop-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.load-sop-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.load-sop-form h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.load-sop-form p {
+  margin: 0;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+#loadSopSelect {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.load-sop-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.load-confirm-btn,
+.load-cancel-btn {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.load-confirm-btn {
+  background: #0f766e;
+  color: #fff;
+  border-color: #0f766e;
+}
+
+.load-cancel-btn {
+  background: #f8fafc;
+  color: #1f2937;
 }
 
 .export-btn {
@@ -295,6 +392,21 @@ textarea {
     width: 100%;
     min-height: auto;
     padding: 12px;
+  }
+
+  .tool-actions {
+    width: 100%;
+  }
+
+  #sopNameInput {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+  }
+
+  .save-status {
+    margin-left: 0;
+    width: 100%;
   }
 
   .header-top-row {

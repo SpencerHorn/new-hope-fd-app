@@ -13,6 +13,8 @@
 	let user = data.user ? structuredClone(data.user) : null;
 	let checklists: any[] = [];
 	let loadingChecklists = true;
+	let sopAssignments: any[] = [];
+	let loadingSopAssignments = true;
 	let saveMessage = '';
 	let saveError = '';
 	let errors: ValidationErrors = {};
@@ -153,6 +155,41 @@
 		loadingChecklists = false;
 	}
 
+	async function loadAssignedSops() {
+		if (!user) {
+			loadingSopAssignments = false;
+			return;
+		}
+
+		const res = await fetch(`/api/users/${user.id}/sops`);
+		sopAssignments = res.ok ? await res.json() : [];
+		loadingSopAssignments = false;
+	}
+
+	async function openSopAssignment(assignment: any) {
+		const res = await fetch('/api/sops/assigned/open', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ userSopAssignmentId: assignment.userSopAssignmentId })
+		});
+
+		if (!res.ok) {
+			alert('Unable to open SOP assignment.');
+			return;
+		}
+
+		const body = await res.json().catch(() => ({}));
+		if (body.completedAt) {
+			assignment.completedAt = body.completedAt;
+			assignment.status = 'completed';
+		}
+
+		const documentPath = assignment.sopDocumentId
+			? `/tools/sop?documentId=${encodeURIComponent(assignment.sopDocumentId)}`
+			: '/tools/sop';
+		window.location.assign(documentPath);
+	}
+
 	async function toggleItem(item: any) {
 		const nextCompleted = !item.completed;
 		const previousDateCompleted = item.dateCompleted;
@@ -176,7 +213,10 @@
 		}
 	}
 
-	onMount(loadAssignedChecklists);
+	onMount(() => {
+		loadAssignedChecklists();
+		loadAssignedSops();
+	});
 </script>
 
 <main class="dashboard">
@@ -345,6 +385,52 @@
 		</section>
 
 		<section class="card">
+			<h2>Assigned SOPs</h2>
+			{#if loadingSopAssignments}
+				<p class="muted">Loading SOP assignments...</p>
+			{:else if sopAssignments.length === 0}
+				<p class="muted">No SOPs are currently assigned to you.</p>
+			{:else}
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th>Title</th>
+								<th>SOP #</th>
+								<th>Revision Date</th>
+								<th>Status</th>
+								<th>Completed At</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each sopAssignments as assignment}
+								<tr>
+									<td>{assignment.sopTitle}</td>
+									<td>{assignment.sopNumber}</td>
+									<td>{assignment.revisionDate}</td>
+									<td>
+										{assignment.status === 'completed' ? 'Completed' : 'Pending'}
+									</td>
+									<td>
+										{assignment.completedAt
+											? new Date(assignment.completedAt).toLocaleString()
+											: '-'}
+									</td>
+									<td>
+										<button class="open-sop-btn" on:click={() => openSopAssignment(assignment)}>
+											Open SOP
+										</button>
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{/if}
+		</section>
+
+		<section class="card">
 			<h2>Assigned Checklist Items</h2>
 			{#if loadingChecklists}
 				<p class="muted">Loading checklists...</p>
@@ -356,7 +442,7 @@
 						<div class="checklist-header">
 							<h3>{checklist.name}</h3>
 							<p class="muted">
-								{checklist.items.filter((item) => item.completed).length}/{checklist.items.length}
+								{checklist.items.filter((item: any) => item.completed).length}/{checklist.items.length}
 								completed
 							</p>
 						</div>
@@ -514,6 +600,16 @@
 		border-radius: 8px;
 		cursor: pointer;
 		font-weight: 600;
+	}
+
+	.open-sop-btn {
+		padding: 6px 10px;
+		background: #111827;
+		color: white;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		font-size: 13px;
 	}
 
 	.status {
