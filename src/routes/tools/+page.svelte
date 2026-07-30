@@ -5,6 +5,7 @@
 	<div class="links">
 		<a href="/tools/training">Training Form</a>
 		<a href="/tools/roster">Roster Form</a>
+		<a href="/tools/sop">SOP Writer</a>
 	</div>
 </div>
 

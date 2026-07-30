@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NHFD SOP Writer</title>
+    <link rel="stylesheet" href="/src/nhfdSopWriter.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  </head>
+  <body>
+    <div class="paper-container" id="sopDocument">
+      <div class="tool-actions" id="toolActions">
+        <button type="button" class="export-btn" id="exportBtn">Save as PDF</button>
+        <button type="button" class="clear-btn" id="clearBtn">Clear Form</button>
+        <label class="logo-upload-label" for="logoUpload">Change Logo</label>
+        <input type="file" id="logoUpload" accept="image/*" />
+      </div>
+
+      <div class="sop-pages" id="sopPages">
+        <article class="sop-page">
+          <header class="sop-header">
+            <div class="header-top-row">
+              <img src="/NewHopeLogo.png" alt="Department logo" class="dept-logo" data-logo />
+              <div class="title-block">
+                <input
+                  class="doc-title"
+                  type="text"
+                  data-sync-field="departmentHeader"
+                  value="NEW HOPE VOLUNTEER FIRE DEPARTMENT"
+                />
+                <div class="doc-subtitle">Standard Operating Guidelines</div>
+                <input
+                  class="doc-sop-title"
+                  type="text"
+                  data-sync-field="sopTitle"
+                  placeholder="SOP Title"
+                />
+              </div>
+            </div>
+
+            <div class="meta-grid">
+              <label>
+                SOP Number
+                <input type="text" data-sync-field="sopNumber" placeholder="A - 4.0" />
+              </label>
+              <label>
+                Revision Date
+                <input type="text" data-sync-field="revisionDate" placeholder="MM/DD/YYYY" />
+              </label>
+              <label>
+                Effective Date
+                <input type="text" data-sync-field="effectiveDate" placeholder="MM/DD/YYYY" />
+              </label>
+              <label>
+                Approved By
+                <input type="text" data-sync-field="approvedBy" placeholder="Fire Chief / Designee" />
+              </label>
+            </div>
+          </header>
+
+          <main class="sop-body">
+            <section class="sop-section compliance">
+              <h2>NFPA/OSHA Compliance Statement</h2>
+              <textarea
+                rows="3"
+                data-sync-field="complianceStatement"
+                placeholder="Insert NFPA/OSHA compliance statement."
+              ></textarea>
+            </section>
+
+            <section class="sop-section">
+              <h2>Purpose</h2>
+              <div class="editable" contenteditable="true" data-placeholder="Enter purpose details."></div>
+            </section>
+            <section class="sop-section">
+              <h2>Scope</h2>
+              <div class="editable" contenteditable="true" data-placeholder="Insert scope of this SOG, including applicable personnel and situations."></div>
+            </section>
+            <section class="sop-section">
+              <h2>Policy</h2>
+              <div class="editable" contenteditable="true" data-placeholder="Insert department policy statement."></div>
+            </section>
+            <section class="sop-section">
+              <h2>Responsibilities</h2>
+              <div class="editable" contenteditable="true" data-placeholder="Define member and officer responsibilities."></div>
+            </section>
+            <section class="sop-section procedures">
+              <h2>Procedures</h2>
+              <div class="editable" contenteditable="true" data-placeholder="Add procedure details and operational considerations."></div>
+            </section>
+          </main>
+
+          <footer class="sop-footer">
+            <label class="footer-meta">
+              SOP #
+              <span class="footer-value" data-footer-sync="sopNumber"></span>
+            </label>
+            <span class="separator">|</span>
+            <label class="footer-meta">
+              Revision Date
+              <span class="footer-value" data-footer-sync="revisionDate"></span>
+            </label>
+            <span class="separator">|</span>
+            Page <strong data-page-number></strong> of <strong data-page-total></strong>
+          </footer>
+        </article>
+
+        <article class="sop-page">
+          <header class="sop-header">
+            <div class="header-top-row">
+              <img src="/NewHopeLogo.png" alt="Department logo" class="dept-logo" data-logo />
+              <div class="title-block">
+                <input
+                  class="doc-title"
+                  type="text"
+                  data-sync-field="departmentHeader"
+                  value="NEW HOPE VOLUNTEER FIRE DEPARTMENT"
+                />
+                <div class="doc-subtitle">Standard Operating Guidelines</div>
+                <input
+                  class="doc-sop-title"
+                  type="text"
+                  data-sync-field="sopTitle"
+                  placeholder="SOP Title"
+                />
+              </div>
+            </div>
+
+            <div class="meta-grid">
+              <label>
+                SOP Number
+                <input type="text" data-sync-field="sopNumber" placeholder="A - 4.0" />
+              </label>
+              <label>
+                Revision Date
+                <input type="text" data-sync-field="revisionDate" placeholder="MM/DD/YYYY" />
+              </label>
+              <label>
+                Effective Date
+                <input type="text" data-sync-field="effectiveDate" placeholder="MM/DD/YYYY" />
+              </label>
+              <label>
+                Approved By
+                <input type="text" data-sync-field="approvedBy" placeholder="Fire Chief / Designee" />
+              </label>
+            </div>
+          </header>
+
+          <main class="sop-body">
+            <section class="sop-section">
+              <h2>Safety</h2>
+              <div class="editable" contenteditable="true" data-placeholder="Insert safety requirements, PPE, accountability, and responder safety guidance."></div>
+            </section>
+            <section class="sop-section">
+              <h2>References</h2>
+              <div class="editable" contenteditable="true" data-placeholder="List NFPA standards, OSHA requirements, and local protocols."></div>
+            </section>
+            <section class="sop-section">
+              <h2>Recordkeeping</h2>
+              <div class="editable" contenteditable="true" data-placeholder="Document records retained, retention periods, and owners."></div>
+            </section>
+            <section class="sop-section">
+              <h2>Review and Revision</h2>
+              <div class="editable" contenteditable="true" data-placeholder="Define review cycle, revision process, and approval authority."></div>
+            </section>
+
+            <section class="sop-section approval-section">
+              <h2>Approval</h2>
+              <table class="approval-table">
+                <thead>
+                  <tr>
+                    <th>Approval Role</th>
+                    <th>Name / Title</th>
+                    <th>Signature</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Prepared By</td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                  </tr>
+                  <tr>
+                    <td>Reviewed By</td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                  </tr>
+                  <tr>
+                    <td>Approved By</td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                  </tr>
+                  <tr>
+                    <td>Fire Chief / Designee</td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                    <td><div class="line-input" contenteditable="true"></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+          </main>
+
+          <footer class="sop-footer">
+            <label class="footer-meta">
+              SOP #
+              <span class="footer-value" data-footer-sync="sopNumber"></span>
+            </label>
+            <span class="separator">|</span>
+            <label class="footer-meta">
+              Revision Date
+              <span class="footer-value" data-footer-sync="revisionDate"></span>
+            </label>
+            <span class="separator">|</span>
+            Page <strong data-page-number></strong> of <strong data-page-total></strong>
+          </footer>
+        </article>
+      </div>
+    </div>
+
+    <script src="/src/nhfdSopWriter.js"></script>
+  </body>
+</html>
