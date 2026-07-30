@@ -106,10 +106,86 @@ export const userChecklistItems = sqliteTable('user_checklist_items', {
 	notes: text('notes')
 });
 
+/* --------------------------------------------------------------------------
+	SOP Documents
+	- sop_documents: saved SOP form snapshots that can be assigned later
+----------------------------------------------------------------------------*/
+
+export const sopDocuments = sqliteTable(
+	'sop_documents',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		name: text('name').notNull(),
+		sopTitle: text('sop_title').notNull(),
+		sopNumber: text('sop_number').notNull(),
+		revisionDate: text('revision_date').notNull(),
+		formData: text('form_data').notNull(),
+		createdByUserId: integer('created_by_user_id').references(() => users.id),
+		createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
+		updatedAt: text('updated_at').default('CURRENT_TIMESTAMP')
+	},
+	(t) => ({
+		nameUnique: uniqueIndex('sop_documents_name_unique').on(t.name)
+	})
+);
+
+/* --------------------------------------------------------------------------
+	SOP Assignments
+	- sop_assignments: assignment metadata for a specific SOP release
+	- user_sop_assignments: per-user assignment state and completion timestamp
+----------------------------------------------------------------------------*/
+
+export const sopAssignments = sqliteTable('sop_assignments', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	sopTitle: text('sop_title').notNull(),
+	sopNumber: text('sop_number').notNull(),
+	revisionDate: text('revision_date').notNull(),
+	sopDocumentId: text('sop_document_id').references(() => sopDocuments.id),
+	assignedByUserId: integer('assigned_by_user_id').references(() => users.id),
+	assignedAt: text('assigned_at').default('CURRENT_TIMESTAMP')
+});
+
+export const userSopAssignments = sqliteTable(
+	'user_sop_assignments',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		sopAssignmentId: text('sop_assignment_id')
+			.notNull()
+			.references(() => sopAssignments.id, { onDelete: 'cascade' }),
+		userId: integer('user_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		assignedAt: text('assigned_at').default('CURRENT_TIMESTAMP'),
+		completedAt: text('completed_at')
+	},
+	(t) => ({
+		assignmentUserUnique: uniqueIndex('user_sop_assignments_assignment_user_unique').on(
+			t.sopAssignmentId,
+			t.userId
+		)
+	})
+);
+
 // Relations
 export const userRelations = relations(users, ({ many }) => ({
 	onboarding: many(userOnboardingStatus),
-	checklists: many(userChecklists)
+	checklists: many(userChecklists),
+	sopDocuments: many(sopDocuments),
+	sopAssignments: many(userSopAssignments)
+}));
+
+export const sopDocumentRelations = relations(sopDocuments, ({ one, many }) => ({
+	createdBy: one(users, {
+		fields: [sopDocuments.createdByUserId],
+		references: [users.id]
+	}),
+	assignments: many(sopAssignments)
 }));
 
 export const checklistRelations = relations(checklists, ({ many }) => ({
@@ -145,6 +221,29 @@ export const userChecklistItemRelations = relations(userChecklistItems, ({ one }
 	templateItem: one(checklistItems, {
 		fields: [userChecklistItems.checklistItemId],
 		references: [checklistItems.id]
+	})
+}));
+
+export const sopAssignmentRelations = relations(sopAssignments, ({ one, many }) => ({
+	sopDocument: one(sopDocuments, {
+		fields: [sopAssignments.sopDocumentId],
+		references: [sopDocuments.id]
+	}),
+	assignedBy: one(users, {
+		fields: [sopAssignments.assignedByUserId],
+		references: [users.id]
+	}),
+	userAssignments: many(userSopAssignments)
+}));
+
+export const userSopAssignmentRelations = relations(userSopAssignments, ({ one }) => ({
+	assignment: one(sopAssignments, {
+		fields: [userSopAssignments.sopAssignmentId],
+		references: [sopAssignments.id]
+	}),
+	user: one(users, {
+		fields: [userSopAssignments.userId],
+		references: [users.id]
 	})
 }));
 

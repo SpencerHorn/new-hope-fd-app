@@ -10,11 +10,27 @@
   <body>
     <div class="paper-container" id="sopDocument">
       <div class="tool-actions" id="toolActions">
+        <input type="text" id="sopNameInput" placeholder="Saved SOP name (required)" />
+        <button type="button" class="assign-sop-btn" id="assignSopBtn">Assign SOP</button>
+        <button type="button" class="load-sop-btn" id="loadSopBtn">Load SOP</button>
+        <button type="button" class="save-sop-btn" id="saveSopBtn">Save SOP</button>
         <button type="button" class="export-btn" id="exportBtn">Save as PDF</button>
         <button type="button" class="clear-btn" id="clearBtn">Clear Form</button>
-        <label class="logo-upload-label" for="logoUpload">Change Logo</label>
-        <input type="file" id="logoUpload" accept="image/*" />
+        <span id="saveStatus" class="save-status" aria-live="polite"></span>
       </div>
+
+      <dialog id="loadSopDialog" class="load-sop-dialog">
+        <form method="dialog" class="load-sop-form">
+          <h3>Load Saved SOP</h3>
+          <p>Select an SOP to load into the editor.</p>
+          <label for="loadSopSelect">Saved SOPs</label>
+          <select id="loadSopSelect"></select>
+          <div class="load-sop-actions">
+            <button type="button" id="confirmLoadSopBtn" class="load-confirm-btn">Load</button>
+            <button type="button" id="cancelLoadSopBtn" class="load-cancel-btn">Cancel</button>
+          </div>
+        </form>
+      </dialog>
 
       <div class="sop-pages" id="sopPages">
         <article class="sop-page">

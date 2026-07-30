@@ -11,6 +11,8 @@
 	let user: UserRecord | null = structuredClone(data.user);
 	let checklists: any[] = [];
 	let loadingChecklists = true;
+	let sopAssignments: any[] = [];
+	let loadingSopAssignments = true;
 
 	async function save() {
 		if (!user) return;
@@ -76,12 +78,20 @@
 	onMount(async () => {
 		if (!user) {
 			loadingChecklists = false;
+			loadingSopAssignments = false;
 			return;
 		}
 
-		const res = await fetch(`/api/users/${user.id}/checklists`);
-		checklists = res.ok ? await res.json() : [];
+		const [checklistRes, sopRes] = await Promise.all([
+			fetch(`/api/users/${user.id}/checklists`),
+			fetch(`/api/users/${user.id}/sops`)
+		]);
+
+		checklists = checklistRes.ok ? await checklistRes.json() : [];
 		loadingChecklists = false;
+
+		sopAssignments = sopRes.ok ? await sopRes.json() : [];
+		loadingSopAssignments = false;
 	});
 
 	async function toggleItem(item: any) {
@@ -197,6 +207,45 @@
 				</button>
 			{/if}
 		</div>
+
+		<hr />
+
+		<h2>Assigned SOPs</h2>
+
+		{#if loadingSopAssignments}
+			<p class="muted">Loading SOP assignments...</p>
+		{:else if sopAssignments.length === 0}
+			<p class="muted">No SOPs assigned to this user.</p>
+		{:else}
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>Title</th>
+							<th>SOP #</th>
+							<th>Revision Date</th>
+							<th>Status</th>
+							<th>Completed At</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each sopAssignments as assignment}
+							<tr>
+								<td>{assignment.sopTitle}</td>
+								<td>{assignment.sopNumber}</td>
+								<td>{assignment.revisionDate}</td>
+								<td>{assignment.status === 'completed' ? 'Completed' : 'Pending'}</td>
+								<td>
+									{assignment.completedAt
+										? new Date(assignment.completedAt).toLocaleString()
+										: '—'}
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		{/if}
 
 		<hr />
 
