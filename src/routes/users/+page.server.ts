@@ -19,6 +19,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const lastName = url.searchParams.get('lastName') ?? '';
 	const phone = url.searchParams.get('phone') ?? '';
 	const personalEmail = url.searchParams.get('personalEmail') ?? '';
+	const workEmail = url.searchParams.get('workEmail') ?? '';
 	const roleFilter = url.searchParams.get('role') ?? '';
 	const isProbationary = locals.appUser?.role === 'probationary';
 	const currentUserId = locals.appUser?.id;
@@ -42,6 +43,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	if (lastName) conditions.push(like(users.lastName, `%${lastName}%`));
 	if (phone) conditions.push(like(users.phone, `%${phone}%`));
 	if (personalEmail) conditions.push(like(users.personalEmail, `%${personalEmail}%`));
+	if (workEmail) conditions.push(like(users.workEmail, `%${workEmail}%`));
 	if (roleFilter) conditions.push(like(users.role, roleFilter));
 
 	const query =
@@ -72,6 +74,7 @@ export const actions: Actions = {
 		const lastName = String(form.get('lastName') ?? '');
 		const phone = String(form.get('phone') ?? '');
 		const personalEmail = normalizePersonalEmail(String(form.get('personalEmail') ?? ''));
+		const workEmail = String(form.get('workEmail') ?? '').trim() || null;
 		const requestedRole = String(form.get('role') ?? 'probationary');
 		const canManageRoles = isAdministrator(locals.appUser?.role);
 		const role = canManageRoles && isAppRole(requestedRole) ? requestedRole : 'probationary';
@@ -100,6 +103,7 @@ export const actions: Actions = {
 						lastName,
 						phone: formattedPhone,
 						personalEmail,
+						workEmail,
 						role,
 						deletedAt: null
 					})
@@ -116,6 +120,7 @@ export const actions: Actions = {
 			lastName,
 			phone: formattedPhone,
 			personalEmail,
+			workEmail,
 			role
 		});
 

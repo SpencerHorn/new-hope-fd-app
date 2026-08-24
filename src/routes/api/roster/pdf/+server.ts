@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import PDFDocument from 'pdfkit';
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
-import { sql, and, inArray, ne } from 'drizzle-orm';
+import { sql, and, inArray, isNull, ne } from 'drizzle-orm';
 import { DEFAULT_ADMIN_EMAIL } from '$lib/server/adminSeed';
 
 type UserRow = typeof users.$inferSelect;
@@ -269,11 +269,16 @@ export const POST: RequestHandler = async ({ request }) => {
 								sql`lower(${users.role})`,
 								rolesToInclude.map((r) => r.toLowerCase())
 							),
-							ne(users.personalEmail, DEFAULT_ADMIN_EMAIL)
+							ne(users.personalEmail, DEFAULT_ADMIN_EMAIL),
+							isNull(users.deletedAt)
 						)
 					)
 					.all()
-			: await db.select().from(users).where(ne(users.personalEmail, DEFAULT_ADMIN_EMAIL)).all();
+			: await db
+					.select()
+					.from(users)
+					.where(and(ne(users.personalEmail, DEFAULT_ADMIN_EMAIL), isNull(users.deletedAt)))
+					.all();
 
 	// Sort alphabetically
 	const sortedUsers = [...allUsers].sort((a, b) => {

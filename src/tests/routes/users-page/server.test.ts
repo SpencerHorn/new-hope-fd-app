@@ -92,6 +92,53 @@ describe('users page server', () => {
 		);
 	});
 
+	it('create action persists an optional workEmail when provided', async () => {
+		const valuesMock = vi.fn(() => undefined);
+		vi.mocked(getDB).mockResolvedValue({
+			select: () => ({
+				from: () => ({ where: () => ({ get: async () => undefined }) })
+			}),
+			insert: () => ({ values: valuesMock })
+		} as any);
+
+		const result = await actions.create(
+			makeCreateEvent('administrator', {
+				firstName: 'A',
+				lastName: 'B',
+				personalEmail: 'a@b.com',
+				workEmail: 'a@work.com',
+				phone: '(111) 222-3333',
+				role: 'employee'
+			})
+		);
+
+		expect(result).toEqual({ success: true });
+		expect(valuesMock).toHaveBeenCalledWith(expect.objectContaining({ workEmail: 'a@work.com' }));
+	});
+
+	it('create action stores workEmail as null when omitted', async () => {
+		const valuesMock = vi.fn(() => undefined);
+		vi.mocked(getDB).mockResolvedValue({
+			select: () => ({
+				from: () => ({ where: () => ({ get: async () => undefined }) })
+			}),
+			insert: () => ({ values: valuesMock })
+		} as any);
+
+		const result = await actions.create(
+			makeCreateEvent('administrator', {
+				firstName: 'A',
+				lastName: 'B',
+				personalEmail: 'a@b.com',
+				phone: '(111) 222-3333',
+				role: 'employee'
+			})
+		);
+
+		expect(result).toEqual({ success: true });
+		expect(valuesMock).toHaveBeenCalledWith(expect.objectContaining({ workEmail: null }));
+	});
+
 	it('create action rejects duplicate email or phone', async () => {
 		vi.mocked(getDB).mockResolvedValue({
 			select: () => ({

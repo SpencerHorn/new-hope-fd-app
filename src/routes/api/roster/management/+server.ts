@@ -2,7 +2,7 @@
 import { json } from '@sveltejs/kit';
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
-import { inArray } from 'drizzle-orm';
+import { and, inArray, isNull } from 'drizzle-orm';
 
 export const GET = async () => {
 	const db = getDB();
@@ -16,7 +16,7 @@ export const GET = async () => {
 			role: users.role
 		})
 		.from(users)
-		.where(inArray(users.role, ['volunteer', 'employee']))
+		.where(and(inArray(users.role, ['volunteer', 'employee']), isNull(users.deletedAt)))
 		.orderBy(users.lastName)
 		.all();
 

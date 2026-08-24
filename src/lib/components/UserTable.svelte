@@ -102,6 +102,9 @@
 			if (personalEmail && !u.personalEmail?.toLowerCase().includes(personalEmail.toLowerCase()))
 				return false;
 
+			if (workEmail && !u.workEmail?.toLowerCase().includes(workEmail.toLowerCase()))
+				return false;
+
 			if (phone && !u.phone?.includes(phone.replace(/\D/g, ''))) return false;
 
 			return true;
@@ -166,7 +169,19 @@
 				<input name="firstName" placeholder="First name" bind:value={firstName} />
 				<input name="lastName" placeholder="Last name" bind:value={lastName} />
 				<input name="phone" placeholder="Phone" bind:value={phone} />
-				<input name="personalEmail" placeholder="Personal email" bind:value={personalEmail} />
+				<input
+					name="personalEmail"
+					type="email"
+					placeholder="Personal email"
+					required
+					bind:value={personalEmail}
+				/>
+				<input
+					name="workEmail"
+					type="email"
+					placeholder="Work email (optional)"
+					bind:value={workEmail}
+				/>
 
 				{#if canManageRoles}
 					<select name="role">
@@ -184,7 +199,6 @@
 			{#if showMore}
 				<div class="form-grid">
 					<input name="address" placeholder="Address" bind:value={address} />
-					<input name="workEmail" placeholder="Work email" bind:value={workEmail} />
 					<input name="maskSize" placeholder="Mask size" bind:value={maskSize} />
 					<input name="fitTestDate" type="date" bind:value={fitTestDate} />
 					<input name="tshirtSize" placeholder="T-shirt size" bind:value={tshirtSize} />
