@@ -172,7 +172,7 @@ function waitForHtml2Pdf() {
 const PDF_PAGE_HEIGHT_IN = 11;
 const PDF_MARGIN_IN = 0.2;
 const CSS_PX_PER_IN = 96;
-const MIN_PRINT_SCALE = 0.25;
+const MIN_PRINT_SCALE = 0.15;
 const MAX_FIT_ATTEMPTS = 5;
 
 // Cheap first guess (no rendering) to minimize how many real, expensive PDF renders are needed
@@ -203,8 +203,9 @@ function estimateInitialScale(element) {
 }
 
 // Renders to PDF and checks the *actual* page count (not just an estimate), since real
-// content/viewport sizing can differ from the guess above; shrinks and re-renders until it
-// truly fits one page or the legibility floor is reached.
+// content/viewport sizing can differ from the guess above; shrinks whitespace (margins/padding/
+// gaps) and re-renders until it truly fits one page or the floor is reached. Table/label font
+// sizes are never touched by --print-scale, so printed text stays legible at any roster size.
 async function renderSinglePagePdf(element, opt) {
   let scale = estimateInitialScale(element);
   let pdf;
