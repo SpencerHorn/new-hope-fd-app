@@ -172,12 +172,11 @@ function waitForHtml2Pdf() {
 const PDF_PAGE_HEIGHT_IN = 11;
 const PDF_MARGIN_IN = 0.2;
 const CSS_PX_PER_IN = 96;
-const MIN_PRINT_SCALE = 0.4;
+const MIN_PRINT_SCALE = 0.25;
+const MAX_FIT_ATTEMPTS = 5;
 
-// Shrinks table font-size/padding (never enlarges) via --print-scale so all rows fit on one
-// PDF page. html2pdf always stretches the captured width to fill the page width, so only
-// the height needs to be brought within the page's printable area.
-function fitElementToSinglePage(element) {
+// Cheap first guess (no rendering) to minimize how many real, expensive PDF renders are needed
+function estimateInitialScale(element) {
   const usableHeightPx = (PDF_PAGE_HEIGHT_IN - PDF_MARGIN_IN * 2) * CSS_PX_PER_IN;
 
   element.style.setProperty('--print-scale', '1');
@@ -189,7 +188,7 @@ function fitElementToSinglePage(element) {
   let high = 1;
   let best = MIN_PRINT_SCALE;
 
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 10; i++) {
     const mid = (low + high) / 2;
     element.style.setProperty('--print-scale', String(mid));
     if (element.scrollHeight <= usableHeightPx) {
@@ -200,8 +199,28 @@ function fitElementToSinglePage(element) {
     }
   }
 
-  element.style.setProperty('--print-scale', String(best));
   return best;
+}
+
+// Renders to PDF and checks the *actual* page count (not just an estimate), since real
+// content/viewport sizing can differ from the guess above; shrinks and re-renders until it
+// truly fits one page or the legibility floor is reached.
+async function renderSinglePagePdf(element, opt) {
+  let scale = estimateInitialScale(element);
+  let pdf;
+
+  for (let attempt = 0; attempt < MAX_FIT_ATTEMPTS; attempt++) {
+    element.style.setProperty('--print-scale', String(scale));
+    pdf = await html2pdf().set(opt).from(element).toPdf().get('pdf');
+
+    if (pdf.internal.getNumberOfPages() <= 1 || scale <= MIN_PRINT_SCALE) {
+      break;
+    }
+
+    scale = Math.max(MIN_PRINT_SCALE, scale * 0.75);
+  }
+
+  return pdf;
 }
 
 async function exportToPDF() {
@@ -231,13 +250,12 @@ async function exportToPDF() {
     control.style.display = 'none';
   });
 
-  let scale = 1;
   try {
-    scale = fitElementToSinglePage(element);
-    await html2pdf().set(opt).from(element).save();
+    const pdf = await renderSinglePagePdf(element, opt);
+    pdf.save(filename);
   } catch (error) {
     console.error('PDF generation failed:', error);
-    await exportToPDFWithoutImages(timestamp, scale);
+    await exportToPDFWithoutImages(timestamp);
   } finally {
     element.style.removeProperty('--print-scale');
     controls.forEach((control, index) => {
