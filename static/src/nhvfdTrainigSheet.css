@@ -95,12 +95,12 @@ textarea {
   width: 100%;
   border-collapse: collapse;
   margin: 15px 0;
-  font-size: 9px;
+  font-size: calc(9px * var(--print-scale, 1));
 }
 .attendance-table th,
 .attendance-table td {
   border: 1px solid #000;
-  padding: 2px;
+  padding: calc(2px * var(--print-scale, 1));
   text-align: center;
 }
 .attendance-table th {

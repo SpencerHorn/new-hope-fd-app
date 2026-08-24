@@ -18,6 +18,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		like(users.firstName, pattern),
 		like(users.lastName, pattern),
 		like(users.personalEmail, pattern),
+		like(users.workEmail, pattern),
 		like(users.phone, pattern)
 	);
 

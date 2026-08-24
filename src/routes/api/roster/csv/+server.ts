@@ -1,6 +1,6 @@
 import { getDB } from '$lib/db/client';
 import { users } from '$lib/db/schema';
-import { and, inArray, ne } from 'drizzle-orm';
+import { and, inArray, isNull, ne } from 'drizzle-orm';
 import { DEFAULT_ADMIN_EMAIL } from '$lib/server/adminSeed';
 
 type UserRow = typeof users.$inferSelect;
@@ -50,7 +50,13 @@ export async function POST({ request }) {
 	const rows = await db
 		.select()
 		.from(users)
-		.where(and(inArray(users.role, rolesToInclude), ne(users.personalEmail, DEFAULT_ADMIN_EMAIL)))
+		.where(
+			and(
+				inArray(users.role, rolesToInclude),
+				ne(users.personalEmail, DEFAULT_ADMIN_EMAIL),
+				isNull(users.deletedAt)
+			)
+		)
 		.all();
 
 	// Always force lastName + firstName to appear first

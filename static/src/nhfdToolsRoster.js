@@ -13,6 +13,13 @@ function saveVersion() {
   localStorage.setItem(VERSION_KEY, versionField.value.trim());
 }
 
+function formatDateMMDDYYYY(date) {
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const yyyy = date.getFullYear();
+  return `${mm}${dd}${yyyy}`;
+}
+
 async function fetchRosterFromDatabase() {
   const res = await fetch('/api/roster/station', {
     headers: { Accept: 'application/json' }
@@ -53,7 +60,8 @@ async function initializeTable() {
   renderVolunteers();
 
   const versionField = document.getElementById('versionField');
-  versionField.value = loadVersion();
+  // Printing from user management stamps today's date instead of the saved version note
+  versionField.value = AUTO_PRINT ? formatDateMMDDYYYY(new Date()) : loadVersion();
   versionField.addEventListener('input', saveVersion);
 
   if (AUTO_PRINT) {
@@ -160,6 +168,42 @@ function waitForHtml2Pdf() {
   });
 }
 
+// Letter page minus the html2pdf margins, expressed at the standard 96 CSS px/in
+const PDF_PAGE_HEIGHT_IN = 11;
+const PDF_MARGIN_IN = 0.2;
+const CSS_PX_PER_IN = 96;
+const MIN_PRINT_SCALE = 0.4;
+
+// Shrinks table font-size/padding (never enlarges) via --print-scale so all rows fit on one
+// PDF page. html2pdf always stretches the captured width to fill the page width, so only
+// the height needs to be brought within the page's printable area.
+function fitElementToSinglePage(element) {
+  const usableHeightPx = (PDF_PAGE_HEIGHT_IN - PDF_MARGIN_IN * 2) * CSS_PX_PER_IN;
+
+  element.style.setProperty('--print-scale', '1');
+  if (element.scrollHeight <= usableHeightPx) {
+    return 1;
+  }
+
+  let low = MIN_PRINT_SCALE;
+  let high = 1;
+  let best = MIN_PRINT_SCALE;
+
+  for (let i = 0; i < 12; i++) {
+    const mid = (low + high) / 2;
+    element.style.setProperty('--print-scale', String(mid));
+    if (element.scrollHeight <= usableHeightPx) {
+      best = mid;
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+
+  element.style.setProperty('--print-scale', String(best));
+  return best;
+}
+
 async function exportToPDF() {
   await waitForHtml2Pdf();
 
@@ -187,22 +231,26 @@ async function exportToPDF() {
     control.style.display = 'none';
   });
 
+  let scale = 1;
   try {
+    scale = fitElementToSinglePage(element);
     await html2pdf().set(opt).from(element).save();
   } catch (error) {
     console.error('PDF generation failed:', error);
-    await exportToPDFWithoutImages(timestamp);
+    await exportToPDFWithoutImages(timestamp, scale);
   } finally {
+    element.style.removeProperty('--print-scale');
     controls.forEach((control, index) => {
       control.style.display = originalDisplay[index];
     });
   }
 }
 
-async function exportToPDFWithoutImages(timestamp) {
+async function exportToPDFWithoutImages(timestamp, scale = 1) {
   const element = document.body.cloneNode(true);
   const logo = element.querySelector('.logo-image');
   if (logo) logo.remove();
+  element.style.setProperty('--print-scale', String(scale));
 
   const filename = `NHFD_Roster_${timestamp}.pdf`;
   const opt = {
