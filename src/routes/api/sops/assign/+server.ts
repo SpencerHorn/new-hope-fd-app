@@ -3,6 +3,7 @@ import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { getDB } from '$lib/db/client';
 import { isAdministrator, isAppRole } from '$lib/auth/roles';
 import { sopAssignments, sopDocuments, userSopAssignments, users } from '$lib/db/schema';
+import { sendSopAssignmentEmail } from '$lib/server/email';
 import { randomUUID } from 'crypto';
 
 type AssignTo =
@@ -42,11 +43,16 @@ export const POST = async ({ request, locals }) => {
 		return json({ error: 'Selected SOP document was not found' }, { status: 404 });
 	}
 
-	let targetUsers: Array<{ id: number }> = [];
+	let targetUsers: Array<{ id: number; firstName: string; lastName: string; workEmail: string | null }> = [];
 
 	if (assignTo.type === 'all') {
 		targetUsers = db
-			.select({ id: users.id })
+			.select({
+				id: users.id,
+				firstName: users.firstName,
+				lastName: users.lastName,
+				workEmail: users.workEmail
+			})
 			.from(users)
 			.where(isNull(users.deletedAt))
 			.all();
@@ -57,7 +63,12 @@ export const POST = async ({ request, locals }) => {
 		}
 
 		targetUsers = db
-			.select({ id: users.id })
+			.select({
+				id: users.id,
+				firstName: users.firstName,
+				lastName: users.lastName,
+				workEmail: users.workEmail
+			})
 			.from(users)
 			.where(and(inArray(users.role, roles), isNull(users.deletedAt)))
 			.all();
@@ -67,7 +78,12 @@ export const POST = async ({ request, locals }) => {
 		}
 
 		targetUsers = db
-			.select({ id: users.id })
+			.select({
+				id: users.id,
+				firstName: users.firstName,
+				lastName: users.lastName,
+				workEmail: users.workEmail
+			})
 			.from(users)
 			.where(and(inArray(users.id, assignTo.userIds), isNull(users.deletedAt)))
 			.all();
@@ -76,6 +92,8 @@ export const POST = async ({ request, locals }) => {
 	if (targetUsers.length === 0) {
 		return json({ error: 'No users matched assignment criteria' }, { status: 400 });
 	}
+
+	const usersWithWorkEmail = targetUsers.filter((user) => Boolean(user.workEmail?.trim()));
 
 	const assignmentId = randomUUID();
 	const now = new Date().toISOString();
@@ -106,5 +124,39 @@ export const POST = async ({ request, locals }) => {
 			.run();
 	});
 
-	return json({ success: true, assignedCount: targetUsers.length });
+	const emailFailures: string[] = [];
+	let emailedCount = 0;
+
+	await Promise.all(
+		usersWithWorkEmail.map(async (user) => {
+			const email = user.workEmail?.trim();
+			if (!email) return;
+
+			try {
+				await sendSopAssignmentEmail({
+					to: email,
+					assigneeName: `${user.firstName} ${user.lastName}`.trim(),
+					sopTitle: savedDocument.sopTitle,
+					sopNumber: savedDocument.sopNumber,
+					revisionDate: savedDocument.revisionDate
+				});
+				emailedCount += 1;
+			} catch (error) {
+				console.error('Failed to send SOP assignment email', {
+					userId: user.id,
+					email,
+					error
+				});
+				emailFailures.push(email);
+			}
+		})
+	);
+
+	return json({
+		success: true,
+		assignedCount: targetUsers.length,
+		emailedCount,
+		skippedEmailCount: targetUsers.length - usersWithWorkEmail.length,
+		emailFailures
+	});
 };

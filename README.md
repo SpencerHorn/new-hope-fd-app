@@ -112,3 +112,20 @@ npm run dev
 app will be available at
 
 http://localhost:5173
+
+## Email Notifications For SOP Assignments
+
+When an administrator assigns an SOP, the app can send an email notification to each assigned user's work email address.
+
+Add these environment variables:
+
+- `SMTP_HOST`: SMTP server host
+- `SMTP_PORT`: SMTP server port (for example `587`)
+- `SMTP_SECURE`: `true` for TLS/SSL (usually port `465`), otherwise `false`
+- `SMTP_USER`: SMTP username
+- `SMTP_PASS`: SMTP password
+- `SMTP_FROM_EMAIL`: sender email address
+- `SMTP_FROM_NAME`: sender display name (optional, defaults to `New Hope FD`)
+- `APP_BASE_URL`: base URL used for dashboard links in emails (for example `https://your-app.example.com`)
+
+If SMTP variables are missing or invalid, SOP assignments are still saved, but notification emails will fail.
