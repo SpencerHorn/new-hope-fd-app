@@ -38,7 +38,10 @@ describe('dashboard page server', () => {
 		vi.mocked(getDB).mockResolvedValue({
 			select: () => ({
 				from: () => ({
-					where: () => ({ get: async () => ({ id: 3, firstName: 'Jamie' }) })
+					where: () => ({
+						get: async () => ({ id: 3, firstName: 'Jamie' }),
+						all: async () => [{ id: 'a1', fileName: 'card.pdf' }]
+					})
 				})
 			})
 		} as any);
@@ -47,6 +50,7 @@ describe('dashboard page server', () => {
 
 		expect(result).toEqual({
 			user: { id: 3, firstName: 'Jamie' },
+			attachments: [{ id: 'a1', fileName: 'card.pdf' }],
 			error: null,
 			mustChangePassword: false
 		});

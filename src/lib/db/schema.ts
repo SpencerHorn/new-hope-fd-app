@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { relations } from 'drizzle-orm';
-import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { blob, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const users = sqliteTable('users', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
@@ -15,8 +15,23 @@ export const users = sqliteTable('users', {
 	maskSize: text('mask_size'),
 	tshirtSize: text('tshirt_size'),
 	deletedAt: text('deleted_at'),
+	deletionReason: text('deletion_reason'),
 	createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
 	updatedAt: text('updated_at').default('CURRENT_TIMESTAMP')
+});
+
+export const userAttachments = sqliteTable('user_attachments', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	fileName: text('file_name').notNull(),
+	mimeType: text('mime_type').notNull(),
+	fileSize: integer('file_size').notNull(),
+	fileData: blob('file_data', { mode: 'buffer' }).notNull(),
+	uploadedAt: text('uploaded_at').default('CURRENT_TIMESTAMP')
 });
 
 export const onboardingItems = sqliteTable('onboarding_items', {

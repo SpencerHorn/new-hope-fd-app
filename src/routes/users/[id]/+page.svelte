@@ -9,10 +9,50 @@
 	type UserRecord = NonNullable<PageData['user']>;
 
 	let user: UserRecord | null = structuredClone(data.user);
+	let attachments: any[] = data.attachments ? structuredClone(data.attachments) : [];
 	let checklists: any[] = [];
 	let loadingChecklists = true;
 	let sopAssignments: any[] = [];
 	let loadingSopAssignments = true;
+
+	async function uploadAttachment(event: Event) {
+		if (!user) return;
+		const input = event.target as HTMLInputElement;
+		const file = input.files?.[0];
+		input.value = '';
+		if (!file) return;
+
+		const formData = new FormData();
+		formData.set('attachment', file);
+
+		const res = await fetch(`/api/users/${user.id}/attachments`, {
+			method: 'POST',
+			body: formData
+		});
+
+		if (!res.ok) {
+			alert((await res.text()) || 'Unable to upload file.');
+			return;
+		}
+
+		attachments = [...attachments, await res.json()];
+	}
+
+	async function removeAttachment(attachmentId: string) {
+		if (!user) return;
+		if (!confirm('Remove this file?')) return;
+
+		const res = await fetch(`/api/users/${user.id}/attachments/${attachmentId}`, {
+			method: 'DELETE'
+		});
+
+		if (!res.ok) {
+			alert((await res.text()) || 'Unable to remove file.');
+			return;
+		}
+
+		attachments = attachments.filter((a) => a.id !== attachmentId);
+	}
 
 	async function save() {
 		if (!user) return;
@@ -32,10 +72,17 @@
 
 	async function deleteUser() {
 		if (!data.user) return;
-		if (!confirm('Delete this user? This cannot be undone.')) return;
+		const reason = prompt('Please provide a reason for deleting this user:');
+		if (reason === null) return;
+		if (!reason.trim()) {
+			alert('A reason for deletion is required.');
+			return;
+		}
 
 		const res = await fetch(`/api/users/${data.user.id}`, {
-			method: 'DELETE'
+			method: 'DELETE',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ reason: reason.trim() })
 		});
 
 		if (res.ok) {
@@ -210,6 +257,43 @@
 
 		<hr />
 
+		<h2>Attached Files</h2>
+		{#if attachments.length === 0}
+			<p class="muted">No files have been attached to this user.</p>
+		{:else}
+			<ul class="attachment-list">
+				{#each attachments as file (file.id)}
+					<li class="attachment-row">
+						<a
+							class="attachment-link"
+							href={`/api/users/${user.id}/attachments/${file.id}`}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							{file.fileName}
+						</a>
+						{#if data.canManageUsers}
+							<button
+								class="attachment-remove"
+								type="button"
+								on:click={() => removeAttachment(file.id)}
+							>
+								Remove
+							</button>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		{/if}
+		{#if data.canManageUsers}
+			<label class="file-upload-btn">
+				Add File
+				<input type="file" on:change={uploadAttachment} hidden />
+			</label>
+		{/if}
+
+		<hr />
+
 		<h2>Assigned SOPs</h2>
 
 		{#if loadingSopAssignments}
@@ -374,6 +458,55 @@
 		border: 1px solid #fca5a5;
 		font-weight: 600;
 		cursor: pointer;
+	}
+
+	.attachment-list {
+		list-style: none;
+		margin: 0 0 12px;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.attachment-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.attachment-link {
+		display: inline-block;
+		padding: 6px 10px;
+		background: #003670;
+		color: white;
+		border-radius: 4px;
+		font-size: 13px;
+		text-decoration: none;
+	}
+
+	.attachment-remove {
+		background: none;
+		border: none;
+		color: #991b1b;
+		font-size: 13px;
+		cursor: pointer;
+		padding: 0;
+	}
+
+	.file-upload-btn {
+		display: inline-block;
+		padding: 6px 10px;
+		background: #f3f4f6;
+		border: 1px solid #d1d5db;
+		border-radius: 6px;
+		font-size: 13px;
+		cursor: pointer;
+		color: #374151;
+	}
+
+	.file-upload-btn:hover {
+		background: #e5e7eb;
 	}
 
 	hr {

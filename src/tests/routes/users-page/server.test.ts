@@ -68,7 +68,8 @@ describe('users page server', () => {
 	});
 
 	it('create action allows admin users', async () => {
-		const valuesMock = vi.fn(() => undefined);
+		const returningMock = vi.fn(() => ({ get: async () => ({ id: 42 }) }));
+		const valuesMock = vi.fn(() => ({ returning: returningMock }));
 		vi.mocked(getDB).mockResolvedValue({
 			select: () => ({
 				from: () => ({ where: () => ({ get: async () => undefined }) })
@@ -93,7 +94,8 @@ describe('users page server', () => {
 	});
 
 	it('create action persists an optional workEmail when provided', async () => {
-		const valuesMock = vi.fn(() => undefined);
+		const returningMock = vi.fn(() => ({ get: async () => ({ id: 42 }) }));
+		const valuesMock = vi.fn(() => ({ returning: returningMock }));
 		vi.mocked(getDB).mockResolvedValue({
 			select: () => ({
 				from: () => ({ where: () => ({ get: async () => undefined }) })
@@ -117,7 +119,8 @@ describe('users page server', () => {
 	});
 
 	it('create action stores workEmail as null when omitted', async () => {
-		const valuesMock = vi.fn(() => undefined);
+		const returningMock = vi.fn(() => ({ get: async () => ({ id: 42 }) }));
+		const valuesMock = vi.fn(() => ({ returning: returningMock }));
 		vi.mocked(getDB).mockResolvedValue({
 			select: () => ({
 				from: () => ({ where: () => ({ get: async () => undefined }) })

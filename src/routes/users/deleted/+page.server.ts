@@ -47,7 +47,7 @@ export const actions: Actions = {
 			return fail(404, { error: 'Deleted user not found' });
 		}
 
-		await db.update(users).set({ deletedAt: null }).where(eq(users.id, id));
+		await db.update(users).set({ deletedAt: null, deletionReason: null }).where(eq(users.id, id));
 
 		return { success: true };
 	},

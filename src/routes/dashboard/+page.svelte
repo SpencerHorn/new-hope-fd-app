@@ -11,6 +11,7 @@
 	};
 
 	let user = data.user ? structuredClone(data.user) : null;
+	const attachments = data.attachments ?? [];
 	let checklists: any[] = [];
 	let loadingChecklists = true;
 	let sopAssignments: any[] = [];
@@ -227,44 +228,6 @@
 		</section>
 	{/if}
 
-	<section class="card">
-		<div class="card-header">
-			<div>
-				<h2>Security</h2>
-				<p class="muted">Update your password to keep your account secure.</p>
-			</div>
-		</div>
-
-		{#if mustChangePassword}
-			<p class="notice warning">
-				You must change your temporary password before using the rest of the application.
-			</p>
-		{/if}
-
-		<div class="form-grid">
-			<div class="field-row">
-				<label for="currentPassword">Current Password</label>
-				<input id="currentPassword" type="password" bind:value={currentPassword} />
-			</div>
-
-			<div class="field-row">
-				<label for="newPassword">New Password</label>
-				<input id="newPassword" type="password" bind:value={newPassword} />
-			</div>
-
-			<div class="field-row">
-				<label for="confirmPassword">Confirm New Password</label>
-				<input id="confirmPassword" type="password" bind:value={confirmPassword} />
-			</div>
-		</div>
-
-		<div class="actions">
-			<button class="save-btn" type="button" on:click={updatePassword}>Update Password</button>
-			{#if passwordMessage}<p class="status success">{passwordMessage}</p>{/if}
-			{#if passwordError}<p class="status error">{passwordError}</p>{/if}
-		</div>
-	</section>
-
 	{#if user}
 		<section class="card">
 			<div class="card-header">
@@ -381,6 +344,66 @@
 				<button class="save-btn" type="button" on:click={saveProfile}>Save Profile</button>
 				{#if saveMessage}<p class="status success">{saveMessage}</p>{/if}
 				{#if saveError}<p class="status error">{saveError}</p>{/if}
+			</div>
+		</section>
+
+		<section class="card">
+			<h2>Attached Files</h2>
+			{#if attachments.length === 0}
+				<p class="muted">No files have been attached to your profile.</p>
+			{:else}
+				<ul class="attachment-list">
+					{#each attachments as file (file.id)}
+						<li>
+							<a
+								class="attachment-link"
+								href={`/api/users/${user.id}/attachments/${file.id}`}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								{file.fileName}
+							</a>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+		</section>
+
+		<section class="card">
+			<div class="card-header">
+				<div>
+					<h2>Security</h2>
+					<p class="muted">Update your password to keep your account secure.</p>
+				</div>
+			</div>
+
+			{#if mustChangePassword}
+				<p class="notice warning">
+					You must change your temporary password before using the rest of the application.
+				</p>
+			{/if}
+
+			<div class="form-grid">
+				<div class="field-row">
+					<label for="currentPassword">Current Password</label>
+					<input id="currentPassword" type="password" bind:value={currentPassword} />
+				</div>
+
+				<div class="field-row">
+					<label for="newPassword">New Password</label>
+					<input id="newPassword" type="password" bind:value={newPassword} />
+				</div>
+
+				<div class="field-row">
+					<label for="confirmPassword">Confirm New Password</label>
+					<input id="confirmPassword" type="password" bind:value={confirmPassword} />
+				</div>
+			</div>
+
+			<div class="actions">
+				<button class="save-btn" type="button" on:click={updatePassword}>Update Password</button>
+				{#if passwordMessage}<p class="status success">{passwordMessage}</p>{/if}
+				{#if passwordError}<p class="status error">{passwordError}</p>{/if}
 			</div>
 		</section>
 
@@ -610,6 +633,25 @@
 		border-radius: 8px;
 		cursor: pointer;
 		font-size: 13px;
+	}
+
+	.attachment-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.attachment-link {
+		display: inline-block;
+		padding: 6px 10px;
+		background: #111827;
+		color: white;
+		border-radius: 8px;
+		font-size: 13px;
+		text-decoration: none;
 	}
 
 	.status {

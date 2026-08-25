@@ -26,6 +26,7 @@
 						<th>Phone</th>
 						<th>Email</th>
 						<th>Deleted</th>
+						<th>Reason</th>
 						<th>Actions</th>
 					</tr>
 				</thead>
@@ -36,6 +37,7 @@
 							<td>{user.phone}</td>
 							<td>{user.personalEmail}</td>
 							<td>{formatDeletedAt(user.deletedAt)}</td>
+							<td>{user.deletionReason || 'Not provided'}</td>
 							<td class="actions-cell">
 								<form method="POST" action="?/restore">
 									<input type="hidden" name="userId" value={user.id} />
