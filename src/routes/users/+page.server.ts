@@ -1,15 +1,16 @@
 import type { PageServerLoad, Actions } from './$types';
 import { getDB } from '$lib/db/client';
-import { users } from '$lib/db/schema';
+import { userAttachments, users } from '$lib/db/schema';
 import { isAdministrator, isAppRole } from '$lib/auth/roles';
 import { DEFAULT_ADMIN_EMAIL } from '$lib/server/adminSeed';
 import { fail } from '@sveltejs/kit';
-import { and, eq, isNull, like } from 'drizzle-orm';
+import { and, eq, inArray, isNull, like } from 'drizzle-orm';
 import {
 	findExistingUserByEmailOrPhone,
 	formatPhone,
 	normalizePersonalEmail
 } from '$lib/server/user-conflicts';
+import { addUserAttachment } from '$lib/server/userAttachments';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const db = await getDB();
@@ -53,8 +54,29 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 
 	const results = (await query.all()).filter((user) => user.personalEmail !== DEFAULT_ADMIN_EMAIL);
 
+	const attachments = results.length
+		? await db
+				.select({
+					id: userAttachments.id,
+					userId: userAttachments.userId,
+					fileName: userAttachments.fileName
+				})
+				.from(userAttachments)
+				.where(inArray(userAttachments.userId, results.map((user) => user.id)))
+				.all()
+		: [];
+	const attachmentsByUserId = new Map<number, { id: string; fileName: string }[]>();
+	for (const attachment of attachments) {
+		const list = attachmentsByUserId.get(attachment.userId) ?? [];
+		list.push({ id: attachment.id, fileName: attachment.fileName });
+		attachmentsByUserId.set(attachment.userId, list);
+	}
+
 	return {
-		users: results,
+		users: results.map((user) => ({
+			...user,
+			attachments: attachmentsByUserId.get(user.id) ?? []
+		})),
 		canManageRoles: isAdmin,
 		canDeleteUsers: isAdmin,
 		canManageUsers: isAdmin,
@@ -78,6 +100,8 @@ export const actions: Actions = {
 		const requestedRole = String(form.get('role') ?? 'probationary');
 		const canManageRoles = isAdministrator(locals.appUser?.role);
 		const role = canManageRoles && isAppRole(requestedRole) ? requestedRole : 'probationary';
+		const attachment = form.get('attachment');
+		const hasAttachment = attachment instanceof File && attachment.size > 0;
 
 		if (!firstName || !lastName || !personalEmail) {
 			return fail(400, { error: 'Missing required fields' });
@@ -109,20 +133,32 @@ export const actions: Actions = {
 					})
 					.where(eq(users.id, existingProfile.id));
 
+				if (hasAttachment) {
+					await addUserAttachment(db, existingProfile.id, attachment as File);
+				}
+
 				return { success: true, restored: true };
 			}
 
 			return fail(400, { error: 'A user with that email or phone already exists.' });
 		}
 
-		await db.insert(users).values({
-			firstName,
-			lastName,
-			phone: formattedPhone,
-			personalEmail,
-			workEmail,
-			role
-		});
+		const inserted = await db
+			.insert(users)
+			.values({
+				firstName,
+				lastName,
+				phone: formattedPhone,
+				personalEmail,
+				workEmail,
+				role
+			})
+			.returning({ id: users.id })
+			.get();
+
+		if (hasAttachment) {
+			await addUserAttachment(db, inserted.id, attachment as File);
+		}
 
 		return { success: true };
 	}

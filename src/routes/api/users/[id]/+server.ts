@@ -3,7 +3,7 @@ import { authUsers, users } from '$lib/db/schema';
 import { isAdministrator } from '$lib/auth/roles';
 import { and, eq, isNull } from 'drizzle-orm';
 
-export async function DELETE({ params, locals }) {
+export async function DELETE({ params, request, locals }) {
 	if (!isAdministrator(locals?.appUser?.role)) {
 		return new Response('Forbidden', { status: 403 });
 	}
@@ -11,6 +11,17 @@ export async function DELETE({ params, locals }) {
 	const id = Number(params.id);
 	if (!id) {
 		return new Response('Invalid user id', { status: 400 });
+	}
+
+	let reason = '';
+	try {
+		const payload = await request.json();
+		reason = String(payload?.reason ?? '').trim();
+	} catch {
+		reason = '';
+	}
+	if (!reason) {
+		return new Response('A reason for deletion is required', { status: 400 });
 	}
 
 	const db = await getDB();
@@ -25,7 +36,7 @@ export async function DELETE({ params, locals }) {
 
 	await db
 		.update(users)
-		.set({ deletedAt: new Date().toISOString() })
+		.set({ deletedAt: new Date().toISOString(), deletionReason: reason })
 		.where(eq(users.id, id));
 
 	return new Response(null, { status: 204 });

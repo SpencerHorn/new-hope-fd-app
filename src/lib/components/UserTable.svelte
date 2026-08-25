@@ -126,8 +126,17 @@
 	}
 
 	async function deleteUser(id: number) {
-		if (!confirm('Delete this user?')) return;
-		const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+		const reason = prompt('Please provide a reason for deleting this user:');
+		if (reason === null) return;
+		if (!reason.trim()) {
+			alert('A reason for deletion is required.');
+			return;
+		}
+		const res = await fetch(`/api/users/${id}`, {
+			method: 'DELETE',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ reason: reason.trim() })
+		});
 		if (!res.ok) {
 			const message = (await res.text()) || 'Unable to delete user.';
 			alert(message);
@@ -142,6 +151,55 @@
 
 		const res = await fetch(`/api/users/${user.id}/checklists`);
 		userChecklists = await res.json();
+	}
+
+	async function uploadAttachment(user: any, file: File) {
+		const formData = new FormData();
+		formData.set('attachment', file);
+
+		const res = await fetch(`/api/users/${user.id}/attachments`, {
+			method: 'POST',
+			body: formData
+		});
+
+		if (!res.ok) {
+			const message = (await res.text()) || 'Unable to upload file.';
+			alert(message);
+			return;
+		}
+
+		const attachment = await res.json();
+		users = users.map((u) =>
+			u.id === user.id ? { ...u, attachments: [...(u.attachments ?? []), attachment] } : u
+		);
+	}
+
+	function handleAttachmentChange(user: any, event: Event) {
+		const input = event.target as HTMLInputElement;
+		const file = input.files?.[0];
+		input.value = '';
+		if (!file) return;
+		uploadAttachment(user, file);
+	}
+
+	async function removeAttachment(user: any, attachmentId: string) {
+		if (!confirm('Remove this file?')) return;
+
+		const res = await fetch(`/api/users/${user.id}/attachments/${attachmentId}`, {
+			method: 'DELETE'
+		});
+
+		if (!res.ok) {
+			const message = (await res.text()) || 'Unable to remove file.';
+			alert(message);
+			return;
+		}
+
+		users = users.map((u) =>
+			u.id === user.id
+				? { ...u, attachments: (u.attachments ?? []).filter((a: any) => a.id !== attachmentId) }
+				: u
+		);
 	}
 
 	function printRosterFromTools() {
@@ -164,7 +222,13 @@
 	<h1>User Management</h1>
 
 	{#if canManageUsers}
-		<form method="POST" action="?/create" class="user-form" on:submit={handleAddSubmit}>
+		<form
+			method="POST"
+			action="?/create"
+			class="user-form"
+			enctype="multipart/form-data"
+			on:submit={handleAddSubmit}
+		>
 			<div class="form-grid">
 				<input name="firstName" placeholder="First name" bind:value={firstName} />
 				<input name="lastName" placeholder="Last name" bind:value={lastName} />
@@ -202,6 +266,12 @@
 					<input name="maskSize" placeholder="Mask size" bind:value={maskSize} />
 					<input name="fitTestDate" type="date" bind:value={fitTestDate} />
 					<input name="tshirtSize" placeholder="T-shirt size" bind:value={tshirtSize} />
+				</div>
+				<div class="form-grid">
+					<label class="file-field">
+						<span>Attach a file (optional)</span>
+						<input name="attachment" type="file" />
+					</label>
 				</div>
 			{/if}
 
@@ -243,6 +313,7 @@
 					<th>Email</th>
 					<th>Role</th>
 					<th>Checklists</th>
+					<th>File</th>
 					<th></th>
 				</tr>
 			</thead>
@@ -280,6 +351,39 @@
 								View
 							</button>
 						</td>
+						<td class="attachment-cell">
+							{#each u.attachments ?? [] as file (file.id)}
+								<div class="attachment-row">
+									<a
+										class="attachment-link"
+										href={`/api/users/${u.id}/attachments/${file.id}`}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										{file.fileName}
+									</a>
+									{#if canManageUsers}
+										<button
+											class="attachment-remove"
+											type="button"
+											on:click={() => removeAttachment(u, file.id)}
+										>
+											✕
+										</button>
+									{/if}
+								</div>
+							{/each}
+							{#if canManageUsers}
+								<label class="file-upload-btn">
+									Add File
+									<input
+										type="file"
+										on:change={(e) => handleAttachmentChange(u, e)}
+										hidden
+									/>
+								</label>
+							{/if}
+						</td>
 						<td>
 							{#if canDeleteUsers}
 								<button class="delete" on:click={() => deleteUser(u.id)}>✕</button>
@@ -307,6 +411,14 @@
 	h1,
 	h2 {
 		margin-bottom: 16px;
+	}
+
+	.file-field {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		font-size: 0.9rem;
+		color: #374151;
 	}
 
 	.deleted-link-row {
@@ -435,6 +547,53 @@
 		color: red;
 		font-size: 18px;
 		cursor: pointer;
+	}
+
+	.attachment-cell {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+
+	.attachment-row {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.attachment-link {
+		color: #2563eb;
+		text-decoration: none;
+		font-size: 13px;
+		max-width: 140px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.attachment-remove {
+		background: none;
+		border: none;
+		color: red;
+		font-size: 12px;
+		cursor: pointer;
+		padding: 0;
+	}
+
+	.file-upload-btn {
+		display: inline-block;
+		padding: 4px 8px;
+		background: #f3f4f6;
+		border: 1px solid #d1d5db;
+		border-radius: 6px;
+		font-size: 12px;
+		cursor: pointer;
+		color: #374151;
+	}
+
+	.file-upload-btn:hover {
+		background: #e5e7eb;
 	}
 
 	.table-header {

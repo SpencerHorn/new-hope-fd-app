@@ -24,7 +24,12 @@ describe('users/[id] page server', () => {
 	it('allows admin users to load a user and manage users', async () => {
 		vi.mocked(getDB).mockResolvedValue({
 			select: () => ({
-				from: () => ({ where: () => ({ get: async () => ({ id: 2, firstName: 'Jane' }) }) })
+				from: () => ({
+					where: () => ({
+						get: async () => ({ id: 2, firstName: 'Jane' }),
+						all: async () => []
+					})
+				})
 			})
 		} as any);
 

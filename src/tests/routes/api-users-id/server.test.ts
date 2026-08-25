@@ -15,6 +15,20 @@ describe('api users/[id]', () => {
 		expect(res.status).toBe(403);
 	});
 
+	it('DELETE rejects missing reason', async () => {
+		const req = new Request('http://localhost/api/users/1', {
+			method: 'DELETE',
+			body: JSON.stringify({})
+		});
+		const res = await DELETE({
+			params: { id: '1' },
+			request: req,
+			locals: { appUser: { role: 'administrator' } }
+		} as any);
+
+		expect(res.status).toBe(400);
+	});
+
 	it('DELETE allows admin users', async () => {
 		const getMock = vi.fn(async () => ({ id: 1 }));
 		const whereMock = vi.fn(async () => undefined);
@@ -26,14 +40,21 @@ describe('api users/[id]', () => {
 			update: () => ({ set: setMock })
 		} as any);
 
+		const req = new Request('http://localhost/api/users/1', {
+			method: 'DELETE',
+			body: JSON.stringify({ reason: 'No longer active' })
+		});
 		const res = await DELETE({
 			params: { id: '1' },
+			request: req,
 			locals: { appUser: { role: 'administrator' } }
 		} as any);
 
 		expect(res.status).toBe(204);
 		expect(whereMock).toHaveBeenCalled();
-		expect(setMock).toHaveBeenCalledWith(expect.objectContaining({ deletedAt: expect.any(String) }));
+		expect(setMock).toHaveBeenCalledWith(
+			expect.objectContaining({ deletedAt: expect.any(String), deletionReason: 'No longer active' })
+		);
 	});
 
 	it('PATCH rejects non-admin users editing another profile', async () => {
